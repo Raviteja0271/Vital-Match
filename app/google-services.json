@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "674747071001",
+    "project_id": "vitalmatch-eeca3",
+    "storage_bucket": "vitalmatch-eeca3.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:674747071001:android:740f476920df749320c888",
+        "android_client_info": {
+          "package_name": "com.simats.vitalmatch"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDv8HaEOt0nbrR79tbMk9v1cBynQP-454M"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

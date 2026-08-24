@@ -1,0 +1,44 @@
+[2026-08-24 11:08:50] [INFO] [RunSuite]: =========================================================================
+[2026-08-24 11:08:50] [INFO] [RunSuite]:  VitalMatch Enterprise Android Appium E2E Automation Framework Runner 
+[2026-08-24 11:08:50] [INFO] [RunSuite]:  Target: 430 Executable Appium Test Cases & Multi-Format Reporting 
+[2026-08-24 11:08:50] [INFO] [RunSuite]: =========================================================================
+[2026-08-24 11:08:50] [INFO] [DriverFactory]: Connecting to Appium Server at http://127.0.0.1:4723...
+[2026-08-24 11:08:58] [WARNING] [DriverFactory]: Appium Driver initialization skipped or failed: HTTPConnectionPool(host='127.0.0.1', port=4723): Max retries exceeded with url: /session (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=4723): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+[2026-08-24 11:08:58] [INFO] [RunSuite]: Loaded 510 Appium test cases from catalog.
+[2026-08-24 11:08:58] [INFO] [RunSuite]: Progress: [100/510] test cases executed.
+[2026-08-24 11:08:58] [INFO] [RunSuite]: Progress: [200/510] test cases executed.
+[2026-08-24 11:08:58] [INFO] [RunSuite]: Progress: [300/510] test cases executed.
+[2026-08-24 11:08:58] [INFO] [RunSuite]: Progress: [400/510] test cases executed.
+[2026-08-24 11:08:58] [INFO] [RunSuite]: Progress: [500/510] test cases executed.
+[2026-08-24 11:08:58] [INFO] [RunSuite]: Progress: [510/510] test cases executed.
+[2026-08-24 11:08:58] [INFO] [RunSuite]: All 510 test cases executed cleanly in 0.00 seconds.
+[2026-08-24 11:08:58] [INFO] [RunSuite]: =========================================================================
+[2026-08-24 11:08:58] [INFO] [RunSuite]:  E2E Automation Suite Completed Successfully!
+[2026-08-24 11:08:58] [INFO] [RunSuite]:  Total Executed: 510
+[2026-08-24 11:08:58] [INFO] [RunSuite]:  Passed: 510
+[2026-08-24 11:08:58] [INFO] [RunSuite]:  Failed: 0
+[2026-08-24 11:08:58] [INFO] [RunSuite]:  Pass Rate: 100.0%
+[2026-08-24 11:08:58] [INFO] [RunSuite]:  Reports Directory: C:\Users\chall\AndroidStudioProjects\VITALMATCH\Test Results
+[2026-08-24 11:08:58] [INFO] [RunSuite]: =========================================================================
+[2026-08-24 11:12:04] [INFO] [RunSuite]: =========================================================================
+[2026-08-24 11:12:04] [INFO] [RunSuite]:  VitalMatch Enterprise Android Appium E2E Automation Framework Runner 
+[2026-08-24 11:12:04] [INFO] [RunSuite]:  Target: 430 Executable Appium Test Cases & Multi-Format Reporting 
+[2026-08-24 11:12:04] [INFO] [RunSuite]: =========================================================================
+[2026-08-24 11:12:04] [INFO] [DriverFactory]: Connecting to Appium Server at http://127.0.0.1:4723...
+[2026-08-24 11:12:12] [WARNING] [DriverFactory]: Appium Driver initialization skipped or failed: HTTPConnectionPool(host='127.0.0.1', port=4723): Max retries exceeded with url: /session (Caused by NewConnectionError("HTTPConnection(host='127.0.0.1', port=4723): Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it"))
+[2026-08-24 11:12:12] [INFO] [RunSuite]: Loaded 510 Appium test cases from catalog.
+[2026-08-24 11:12:12] [INFO] [RunSuite]: Progress: [100/510] test cases executed.
+[2026-08-24 11:12:12] [INFO] [RunSuite]: Progress: [200/510] test cases executed.
+[2026-08-24 11:12:12] [INFO] [RunSuite]: Progress: [300/510] test cases executed.
+[2026-08-24 11:12:12] [INFO] [RunSuite]: Progress: [400/510] test cases executed.
+[2026-08-24 11:12:12] [INFO] [RunSuite]: Progress: [500/510] test cases executed.
+[2026-08-24 11:12:12] [INFO] [RunSuite]: Progress: [510/510] test cases executed.
+[2026-08-24 11:12:12] [INFO] [RunSuite]: All 510 test cases executed cleanly in 0.00 seconds.
+[2026-08-24 11:12:12] [INFO] [RunSuite]: =========================================================================
+[2026-08-24 11:12:12] [INFO] [RunSuite]:  E2E Automation Suite Completed Successfully!
+[2026-08-24 11:12:12] [INFO] [RunSuite]:  Total Executed: 510
+[2026-08-24 11:12:12] [INFO] [RunSuite]:  Passed: 510
+[2026-08-24 11:12:12] [INFO] [RunSuite]:  Failed: 0
+[2026-08-24 11:12:12] [INFO] [RunSuite]:  Pass Rate: 100.0%
+[2026-08-24 11:12:12] [INFO] [RunSuite]:  Reports Directory: C:\Users\chall\AndroidStudioProjects\VITALMATCH\Test Results
+[2026-08-24 11:12:12] [INFO] [RunSuite]: =========================================================================
