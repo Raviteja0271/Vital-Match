@@ -1,0 +1,250 @@
+:root {
+    --primary-red: #E53935;
+    --primary-red-hover: #D32F2F;
+    --primary-gradient: linear-gradient(135deg, #E53935 0%, #EF5350 100%);
+    --bg-soft: #F0F2F5;
+    --card-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    --sidebar-width: 260px;
+    --radius: 20px;
+    --indigo-600: #E53935;
+    --emergency-red: #E53935;
+    --success-green: #2ECC71;
+}
+
+body {
+    background-color: var(--bg-soft);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    color: #1E293B;
+    overflow-x: hidden;
+}
+
+/* Auth Pages Layout */
+.auth-split-wrapper {
+    min-height: 100vh;
+    display: flex;
+}
+
+.auth-left-panel {
+    background: var(--primary-gradient);
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 60px;
+    color: white;
+}
+
+.auth-right-panel {
+    flex: 1;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+/* Dashboard Sidebar */
+.sidebar {
+    width: var(--sidebar-width);
+    background: white;
+    height: 100vh;
+    position: fixed;
+    border-right: 1px solid #E2E8F0;
+    padding: 24px;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: #64748B;
+    text-decoration: none;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.sidebar-link:hover, .sidebar-link.active {
+    background: rgba(229, 57, 53, 0.1);
+    color: var(--primary-red);
+}
+
+.sidebar-link i {
+    width: 24px;
+    margin-right: 12px;
+}
+
+/* Premium Cards */
+.vm-card {
+    background: white;
+    border-radius: var(--radius);
+    border: none;
+    box-shadow: var(--card-shadow);
+    padding: 24px;
+    transition: transform 0.2s ease;
+}
+
+.vm-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+}
+
+/* Buttons — Primary Red Palette */
+.btn-indigo, .btn-primary {
+    background-color: var(--primary-red) !important;
+    border-color: var(--primary-red) !important;
+    color: white !important;
+    font-weight: 600;
+    border-radius: 12px;
+    padding: 12px 24px;
+}
+
+.btn-indigo:hover, .btn-primary:hover {
+    background-color: var(--primary-red-hover) !important;
+    border-color: var(--primary-red-hover) !important;
+    color: white !important;
+}
+
+.text-indigo, .text-primary {
+    color: var(--primary-red) !important;
+}
+
+.bg-indigo {
+    background-color: var(--primary-red) !important;
+}
+
+/* Responsive Utilities */
+.main-content {
+    margin-left: var(--sidebar-width);
+    padding: 40px;
+    min-height: 100vh;
+}
+
+@media (max-width: 992px) {
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.show { transform: translateX(0); }
+    .main-content { margin-left: 0; padding: 20px; }
+    .auth-left-panel { display: none; }
+}
+
+/* Success Icons */
+.check-animated {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #DCFCE7;
+    color: #166534;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 40px;
+    margin: 0 auto 24px;
+}
+
+/* Ultra High-Contrast Dark Mode Theme */
+html.dark-mode, body.dark-mode {
+    background-color: #121212 !important;
+    color: #FFFFFF !important;
+}
+
+html.dark-mode h1, html.dark-mode h2, html.dark-mode h3, 
+html.dark-mode h4, html.dark-mode h5, html.dark-mode h6,
+html.dark-mode p, html.dark-mode span:not(.badge), html.dark-mode div:not(.badge), 
+html.dark-mode strong, html.dark-mode label, html.dark-mode th, html.dark-mode td,
+body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, 
+body.dark-mode h4, body.dark-mode h5, body.dark-mode h6,
+body.dark-mode p, body.dark-mode span:not(.badge), body.dark-mode div:not(.badge), 
+body.dark-mode strong, body.dark-mode label, body.dark-mode th, body.dark-mode td {
+    color: #FFFFFF !important;
+}
+
+html.dark-mode .text-muted, html.dark-mode .text-secondary,
+body.dark-mode .text-muted, body.dark-mode .text-secondary {
+    color: #CBD5E1 !important;
+}
+
+body.dark-mode .sidebar {
+    background-color: #1E1E1E !important;
+    border-right-color: #2D2D2D !important;
+}
+
+body.dark-mode .sidebar-link {
+    color: #E2E8F0 !important;
+}
+
+body.dark-mode .sidebar-link.active, body.dark-mode .sidebar-link:hover {
+    background: rgba(229, 57, 53, 0.25) !important;
+    color: #EF5350 !important;
+}
+
+body.dark-mode .vm-card, body.dark-mode .card, body.dark-mode .modal-content, body.dark-mode .list-group-item {
+    background-color: #1E1E1E !important;
+    color: #FFFFFF !important;
+    border-color: #2D2D2D !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Buttons in Dark Mode */
+body.dark-mode .btn-light {
+    background-color: #2A2A2A !important;
+    color: #FFFFFF !important;
+    border-color: #3F3F46 !important;
+}
+
+body.dark-mode .btn-light:hover {
+    background-color: #3F3F46 !important;
+    color: #FFFFFF !important;
+}
+
+/* Tables in Dark Mode */
+body.dark-mode .table,
+body.dark-mode .table td,
+body.dark-mode .table th,
+body.dark-mode .table tr,
+body.dark-mode .table tbody {
+    background-color: transparent !important;
+    color: #FFFFFF !important;
+    border-color: #2D2D2D !important;
+}
+
+body.dark-mode .table thead, body.dark-mode .table th {
+    background-color: #2A2A2A !important;
+    color: #FFFFFF !important;
+}
+
+body.dark-mode .table-hover tbody tr:hover {
+    background-color: #2A2A2A !important;
+    color: #FFFFFF !important;
+}
+
+body.dark-mode .bg-light, body.dark-mode .bg-white {
+    background-color: #2A2A2A !important;
+    color: #FFFFFF !important;
+}
+
+body.dark-mode .form-control, body.dark-mode .form-select, body.dark-mode .input-group-text {
+    background-color: #2A2A2A !important;
+    color: #FFFFFF !important;
+    border-color: #3F3F46 !important;
+}
+
+body.dark-mode .form-control::placeholder {
+    color: #9CA3AF !important;
+}
+
+body.dark-mode .navbar, body.dark-mode .topbar {
+    background-color: #1E1E1E !important;
+    border-bottom-color: #2D2D2D !important;
+}

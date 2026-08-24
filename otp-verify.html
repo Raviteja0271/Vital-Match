@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitalMatch - Email Verification</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <div class="auth-split-wrapper">
+        <div class="auth-left-panel">
+            <div class="mb-5">
+                <h1 class="display-4 fw-bold mb-3">Verify Email</h1>
+                <p class="lead opacity-75">We've sent a verification link to your email address. Please check your inbox and click the link to verify your account.</p>
+            </div>
+            <div class="mt-auto opacity-50 text-sm">© 2025 VitalMatch.</div>
+        </div>
+
+        <div class="auth-right-panel">
+            <div style="max-width: 450px; width: 100%;">
+                <div class="text-center mb-5">
+                    <div class="bg-primary bg-opacity-10 p-4 rounded-circle d-inline-block mb-4">
+                        <i class="fas fa-envelope-open fa-3x text-primary"></i>
+                    </div>
+                    <h2 class="fw-bold">Check Your Email</h2>
+                    <p class="text-muted">We've sent a verification link to your registered email address.</p>
+                </div>
+
+                <div class="vm-card bg-light border-0 mb-4">
+                    <div class="d-flex align-items-start">
+                        <i class="fas fa-info-circle text-primary me-3 mt-1"></i>
+                        <div>
+                            <p class="small mb-2"><strong>What to do:</strong></p>
+                            <ol class="small text-muted mb-0 ps-3">
+                                <li class="mb-1">Open your email inbox</li>
+                                <li class="mb-1">Look for an email from VitalMatch</li>
+                                <li class="mb-1">Click the verification link</li>
+                                <li>Come back and log in!</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <a href="index.html" class="btn btn-indigo w-100 py-3 mb-4">Go to Login</a>
+
+                <div class="text-center">
+                    <p class="text-muted mb-0">Didn't receive the email?</p>
+                    <button onclick="resendVerification()" id="resendBtn" class="btn btn-link text-primary fw-bold text-decoration-none">Resend Verification Email</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script>
+    async function resendVerification() {
+        const btn = document.getElementById('resendBtn');
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+        
+        const { error } = await supabaseClient.auth.resend({ type: 'signup', email: localStorage.getItem('vm_verify_email') || '' });
+        
+        btn.textContent = error ? 'Failed — Try Again' : 'Email Sent!';
+        setTimeout(() => { btn.disabled = false; btn.textContent = 'Resend Verification Email'; }, 5000);
+    }
+    </script>
+</body>
+</html>
