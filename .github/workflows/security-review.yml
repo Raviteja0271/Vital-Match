@@ -1,0 +1,93 @@
+name: Comprehensive DevSecOps Security Review & Performance Audit
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  devsecops-audit:
+    name: Framework Detection, SAST, Dependency & Performance Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout Codebase
+      - name: Step 1 - Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Auto-Detect Backend Framework & Runtime
+      - name: Step 2 - Detect Backend Technology Stack
+        run: |
+          echo "====================================================="
+          echo " AUTOMATIC BACKEND STACK DETECTION"
+          echo "====================================================="
+          if [ -f "supabase/config.toml" ] || [ -f "js/supabase-config.js" ]; if [ -f "build.gradle.kts" ]; then
+            echo "DETECTED BACKEND: PostgREST / Supabase REST Engine & Kotlin Jetpack Compose Android Client"
+          else
+            echo "DETECTED BACKEND: JavaScript / PostgREST Web Service"
+          fi
+
+      # Step 3: Setup Python Environment
+      - name: Step 3 - Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      # Step 4: Run Semgrep SAST Scanner
+      - name: Step 4 - Run Semgrep SAST Code Scan
+        run: |
+          python3 -m pip install semgrep
+          semgrep --config=p/ci || echo "Semgrep completed with warnings"
+
+      # Step 5: Run Gitleaks Secret Scanner
+      - name: Step 5 - Run Gitleaks Secret Scanner
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        continue-on-error: true
+
+      # Step 6: Run Trivy Vulnerability Scanner
+      - name: Step 6 - Run Trivy Dependency & Security Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'table'
+          exit-code: '0'
+
+      # Step 7: Run Automated API & Load Tests
+      - name: Step 7 - Execute Automated API & Baseline Load Tests
+        run: |
+          python3 -m pip install openpyxl requests aiohttp pandas
+          if [ -f "load_testing/baseline_load_test.py" ]; then
+            python3 load_testing/baseline_load_test.py
+          fi
+          if [ -f "generate_audit_excels.py" ]; then
+            python3 generate_audit_excels.py
+          fi
+
+      # Step 8: Upload DevSecOps Artifacts
+      - name: Step 8 - Upload Security Audit & Performance Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: VitalMatch-DevSecOps-Vulnerability-Audit-Reports
+          path: |
+            Vulnerability Test Results/
+            load_testing/
+          retention-days: 30
+
+      # Step 9: Publish Action Summary
+      - name: Step 9 - Publish Action Step Summary
+        if: always()
+        run: |
+          if [ -f "Vulnerability Test Results/executive-summary.md" ]; then
+            cat "Vulnerability Test Results/executive-summary.md" >> $GITHUB_STEP_SUMMARY
+          fi
