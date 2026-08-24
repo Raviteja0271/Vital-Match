@@ -1,0 +1,36 @@
+name: Deploy E2E Reports to GitHub Pages
+
+on:
+  workflow_run:
+    workflows: ["Enterprise Android Appium E2E Automation Pipeline"]
+    types:
+      - completed
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  deploy-pages:
+    name: Deploy Automation Reports to GitHub Pages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Ensure Reports Directory Exists
+        run: |
+          mkdir -p reports
+          if [ ! -f "reports/index.html" ]; then
+            echo "<html><body><h1>VitalMatch Automation Reports</h1></body></html>" > reports/index.html
+          fi
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        continue-on-error: true
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./reports
+          keep_files: true
