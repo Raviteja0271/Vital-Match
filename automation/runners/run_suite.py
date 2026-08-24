@@ -26,7 +26,6 @@ def run_e2e_automation_suite():
     logger.info(" Target: 430 Executable Appium Test Cases & Multi-Format Reporting ")
     logger.info("=========================================================================")
 
-    # Initialize Appium Driver if available
     apk_path = os.path.join(project_root, "app", "build", "outputs", "apk", "debug", "app-debug.apk")
     driver = DriverFactory.get_driver(apk_path)
 
@@ -56,10 +55,9 @@ def run_e2e_automation_suite():
     total_duration = time.time() - start_time
     logger.info(f"All {len(test_cases)} test cases executed cleanly in {total_duration:.2f} seconds.")
 
-    # Cleanup driver
     DriverFactory.quit_driver()
 
-    # Generate Reports in 'Test Results' directory
+    # 1. Generate Reports in 'Test Results' directory
     test_results_dir = os.path.join(project_root, "Test Results")
     os.makedirs(test_results_dir, exist_ok=True)
 
@@ -68,20 +66,26 @@ def run_e2e_automation_suite():
     JSONReporter.generate_json_report(results_data, test_results_dir)
     SummaryReporter.generate_summary_markdown(results_data, test_results_dir)
 
-    # Generate Reports in 'reports/latest' for GitHub Pages
-    gh_pages_dir = os.path.join(project_root, "reports", "latest")
-    os.makedirs(gh_pages_dir, exist_ok=True)
-    HTMLReporter.generate_html_reports(results_data, os.path.join(project_root, "reports"))
+    # 2. Generate Reports in 'reports' directory for GitHub Pages
+    reports_base_dir = os.path.join(project_root, "reports")
+    gh_pages_latest_dir = os.path.join(reports_base_dir, "latest")
+    os.makedirs(gh_pages_latest_dir, exist_ok=True)
 
-    # Copy HTML to gh_pages_dir directly
+    HTMLReporter.generate_html_reports(results_data, reports_base_dir)
+
     html_src = os.path.join(test_results_dir, "HTML", "execution-report.html")
     if os.path.exists(html_src):
-        shutil.copy(html_src, os.path.join(gh_pages_dir, "execution-report.html"))
-        shutil.copy(html_src, os.path.join(gh_pages_dir, "dashboard.html"))
+        # Copy to root reports/ and reports/latest/ as index.html & execution-report.html
+        shutil.copy(html_src, os.path.join(reports_base_dir, "index.html"))
+        shutil.copy(html_src, os.path.join(reports_base_dir, "execution-report.html"))
+        shutil.copy(html_src, os.path.join(gh_pages_latest_dir, "index.html"))
+        shutil.copy(html_src, os.path.join(gh_pages_latest_dir, "execution-report.html"))
+        shutil.copy(html_src, os.path.join(gh_pages_latest_dir, "dashboard.html"))
 
     md_src = os.path.join(test_results_dir, "Summary", "summary.md")
     if os.path.exists(md_src):
-        shutil.copy(md_src, os.path.join(gh_pages_dir, "summary.md"))
+        shutil.copy(md_src, os.path.join(reports_base_dir, "summary.md"))
+        shutil.copy(md_src, os.path.join(gh_pages_latest_dir, "summary.md"))
 
     logger.info("=========================================================================")
     logger.info(f" E2E Automation Suite Completed Successfully!")
