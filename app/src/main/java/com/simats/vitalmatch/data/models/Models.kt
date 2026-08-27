@@ -2,6 +2,7 @@ package com.simats.vitalmatch.data.models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
 
 @Serializable
 data class Donor(
@@ -29,13 +30,13 @@ data class Emergency(
     val hospital_name: String = "",
     val contact_number: String = "",
     val location: String = "",
-    val district: String? = null,
-    val state: String? = null,
-    val city: String? = null,
     val notes: String? = null,
     val priority: String = "High",
     val status: String = "Active",
-    val created_at: String? = null
+    val created_at: String? = null,
+    @Transient val district: String? = null,
+    @Transient val state: String? = null,
+    @Transient val city: String? = null
 )
 
 @Serializable
@@ -58,16 +59,5 @@ data class NotificationModel(
     val type: String? = "info",
     val is_read: Boolean = false,
     val user_id: String? = null,
-    val created_at: String? = null
-)
-
-@Serializable
-data class DonationRecord(
-    val id: String? = null,
-    val donor_id: String,
-    val donor_name: String? = null,
-    val hospital_name: String? = null,
-    val blood_group: String? = null,
-    val donation_date: String,
     val created_at: String? = null
 )

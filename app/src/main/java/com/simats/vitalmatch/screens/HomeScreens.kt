@@ -333,14 +333,14 @@ fun EmergencyList(navController: NavController) {
                 .filter { it.status == "Active" }
 
             emergenciesList = if (userDistrict.isNotBlank()) {
-                allActive.filter { e ->
-                    (e.district != null && e.district.equals(userDistrict, ignoreCase = true)) ||
+                val districtMatches = allActive.filter { e ->
                     e.location.contains(userDistrict, ignoreCase = true) ||
                     (e.user_id != null && e.user_id == currentUser?.id)
                 }
+                if (districtMatches.isNotEmpty()) districtMatches else allActive
             } else {
                 allActive
-            }.take(2)
+            }.take(10)
         } catch (e: Exception) {
             Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
         } finally {
