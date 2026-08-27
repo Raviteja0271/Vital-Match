@@ -42,12 +42,12 @@ data class Emergency(
 @Serializable
 data class BloodRequest(
     val id: String? = null,
-    val donor_id: String,
     val donor_user_id: String,
     val requester_name: String,
     val requester_phone: String,
     val status: String = "Pending",
-    val created_at: String? = null
+    val created_at: String? = null,
+    @Transient val donor_id: String? = null
 )
 
 @Serializable

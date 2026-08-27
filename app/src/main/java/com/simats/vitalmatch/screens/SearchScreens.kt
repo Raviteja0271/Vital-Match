@@ -370,7 +370,6 @@ fun SearchResultsScreen(navController: NavController, bloodGroup: String, countr
                                     if (phone.isBlank()) phone = "N/A"
 
                                     val newRequest = BloodRequest(
-                                        donor_id = donorId,
                                         donor_user_id = donorId,
                                         requester_name = name,
                                         requester_phone = phone,
