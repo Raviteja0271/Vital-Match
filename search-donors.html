@@ -216,18 +216,23 @@
         showToast(`Sending request to ${donorName}...`, 'info');
 
         try {
-            await supabaseClient.from('blood_requests').insert({
-                donor_id: donorId,
+            const { data, error } = await supabaseClient.from('blood_requests').insert({
                 donor_user_id: donorId,
                 requester_name: requesterName,
                 requester_phone: requesterPhone,
                 status: 'Pending'
-            });
+            }).select();
+
+            if (error) {
+                console.error('blood_requests error:', error);
+                showToast(`Error: ${error.message}`, 'danger');
+                return;
+            }
 
             await supabaseClient.from('notifications').insert({
                 user_id: donorId,
                 title: 'New Blood Request Received',
-                message: `Urgent request from ${requesterName}. Contact: ${requesterPhone}`,
+                message: `Urgent blood request from ${requesterName}. Contact: ${requesterPhone}`,
                 type: 'URGENT'
             });
 
