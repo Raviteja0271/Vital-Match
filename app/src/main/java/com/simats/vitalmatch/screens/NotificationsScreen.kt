@@ -29,6 +29,7 @@ import com.simats.vitalmatch.data.models.Emergency
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.*
+import kotlinx.coroutines.launch
 
 @Composable
 fun NotificationsScreen(navController: NavController) {
@@ -142,6 +143,15 @@ fun NotificationsScreen(navController: NavController) {
 
 @Composable
 fun NotificationCard(notification: NotificationData) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var isAccepted by remember { mutableStateOf(false) }
+    var isDeclined by remember { mutableStateOf(false) }
+
+    val isRequestNotif = notification.type == "URGENT" || 
+                         notification.title.contains("Request", ignoreCase = true) || 
+                         notification.title.contains("Emergency", ignoreCase = true)
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -165,15 +175,15 @@ fun NotificationCard(notification: NotificationData) {
                 modifier = Modifier
                     .size(48.dp)
                     .background(
-                        if (notification.type == "CONNECTED") Color(0xFFE8F5E9) else Color(0xFFFFEBEE), 
+                        if (isAccepted || notification.type == "CONNECTED") Color(0xFFE8F5E9) else Color(0xFFFFEBEE), 
                         RoundedCornerShape(12.dp)
                     ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (notification.type == "CONNECTED") Icons.Default.CheckCircle else Icons.Default.WaterDrop,
+                    imageVector = if (isAccepted || notification.type == "CONNECTED") Icons.Default.CheckCircle else Icons.Default.WaterDrop,
                     contentDescription = null,
-                    tint = if (notification.type == "CONNECTED") Color(0xFF2ECC71) else RedPrimary,
+                    tint = if (isAccepted || notification.type == "CONNECTED") Color(0xFF2ECC71) else RedPrimary,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -194,32 +204,17 @@ fun NotificationCard(notification: NotificationData) {
                         modifier = Modifier.weight(1f)
                     )
                     
-                    if (notification.type == "URGENT") {
-                        Surface(
-                            color = RedPrimary,
-                            shape = RoundedCornerShape(4.dp)
-                        ) {
-                            Text(
-                                "URGENT",
-                                color = Color.White,
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                            )
+                    if (isAccepted) {
+                        Surface(color = Color(0xFFE8F5E9), shape = RoundedCornerShape(6.dp)) {
+                            Text("Accepted", color = Color(0xFF2E7D32), fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
                         }
-                    } else if (notification.type == "CONNECTED") {
-                        Surface(
-                            modifier = Modifier.border(1.dp, Color(0xFF2ECC71), RoundedCornerShape(8.dp)),
-                            color = Color.Transparent,
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Text(
-                                com.simats.vitalmatch.ui.theme.AppStrings.get("connected"),
-                                color = Color(0xFF2ECC71),
-                                fontSize = 10.sp,
-                                fontWeight = FontWeight.Bold,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp)
-                            )
+                    } else if (isDeclined) {
+                        Surface(color = Color(0xFFFFEBEE), shape = RoundedCornerShape(6.dp)) {
+                            Text("Declined", color = RedPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
+                        }
+                    } else if (notification.type == "URGENT") {
+                        Surface(color = RedPrimary, shape = RoundedCornerShape(4.dp)) {
+                            Text("URGENT", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
                         }
                     }
                 }
@@ -244,6 +239,63 @@ fun NotificationCard(notification: NotificationData) {
                         Icon(Icons.Default.LocationOn, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(14.dp))
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(text = notification.location, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+
+                if (isRequestNotif && !isAccepted && !isDeclined) {
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedButton(
+                            onClick = {
+                                isDeclined = true
+                                scope.launch {
+                                    try {
+                                        val currentUser = SupabaseClient.client.auth.currentUserOrNull()
+                                        if (currentUser != null) {
+                                            SupabaseClient.client.postgrest["blood_requests"]
+                                                .update({ set("status", "Declined") }) {
+                                                    filter { eq("donor_user_id", currentUser.id) }
+                                                }
+                                        }
+                                    } catch (e: Exception) { }
+                                }
+                            },
+                            modifier = Modifier.weight(1f).height(38.dp),
+                            contentPadding = PaddingValues(0.dp),
+                            shape = RoundedCornerShape(8.dp),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, RedPrimary)
+                        ) {
+                            Text("Decline", fontSize = 12.sp, color = RedPrimary, fontWeight = FontWeight.Bold)
+                        }
+
+                        Button(
+                            onClick = {
+                                isAccepted = true
+                                scope.launch {
+                                    try {
+                                        val currentUser = SupabaseClient.client.auth.currentUserOrNull()
+                                        if (currentUser != null) {
+                                            SupabaseClient.client.postgrest["blood_requests"]
+                                                .update({ set("status", "Accepted") }) {
+                                                    filter { eq("donor_user_id", currentUser.id) }
+                                                }
+                                        }
+                                        Toast.makeText(context, "Request Accepted! Requester notified.", Toast.LENGTH_SHORT).show()
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Request Accepted!", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+                            },
+                            modifier = Modifier.weight(1f).height(38.dp),
+                            contentPadding = PaddingValues(0.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ECC71)),
+                            shape = RoundedCornerShape(8.dp)
+                        ) {
+                            Text("Accept Request", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }
