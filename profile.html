@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitalMatch - Profile</title>
+    <script>if(localStorage.getItem('vm_theme')==='dark')document.documentElement.classList.add('dark-mode');</script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar d-none d-lg-block">
+        <div class="mb-5 text-center"><div class="py-3"><svg width="100" height="100" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="250" cy="220" r="190" stroke="#4F46E5" stroke-width="25"/><path d="M250 470C250 470 426 310 426 190C426 100 346 30 256 30C166 30 86 100 86 190C86 310 256 470 256 470Z" fill="#EF4444"/><path d="M256 340C256 340 366 250 366 170C366 110 316 70 256 70C196 70 146 110 146 170C146 250 256 340 256 340Z" fill="white" fill-opacity="0.2"/><path d="M256 270C285 270 306 247 306 215C306 185 256 120 256 120C256 120 206 185 206 215C206 247 227 270 256 270Z" fill="white"/></svg><h4 class="fw-bold mt-2" style="color:#1E293B;"><span style="color:#EF4444;">Vital</span>Match</h4></div></div>
+        <div class="nav flex-column">
+            <a href="dashboard.html" class="sidebar-link"><i class="fas fa-columns"></i> <span data-i18n="dashboard">Dashboard</span></a>
+            <a href="emergency-feed.html" class="sidebar-link"><i class="fas fa-broadcast-tower"></i> <span data-i18n="emergency_feed">Emergency Feed</span></a>
+            <a href="search-donors.html" class="sidebar-link"><i class="fas fa-search"></i> <span data-i18n="search_donors">Search Donors</span></a>
+            <a href="become-donor.html" class="sidebar-link"><i class="fas fa-hand-holding-medical"></i> <span data-i18n="become_donor">Become Donor</span></a>
+            <a href="notifications.html" class="sidebar-link"><i class="fas fa-bell"></i> <span data-i18n="notifications">Notifications</span></a>
+            <a href="reports.html" class="sidebar-link"><i class="fas fa-file-alt"></i> <span data-i18n="reports">Reports</span></a>
+            <a href="profile.html" class="sidebar-link active"><i class="fas fa-user"></i> <span data-i18n="profile">Profile</span></a>
+            <a href="settings.html" class="sidebar-link"><i class="fas fa-cog"></i> <span data-i18n="settings">Settings</span></a>
+            <hr class="my-4 text-muted">
+            <a href="index.html" class="sidebar-link text-danger"><i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">Logout</span></a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <h2 class="fw-bold mb-0">My Profile</h2>
+            <div class="d-flex align-items-center gap-3">
+                <div class="position-relative cursor-pointer" onclick="window.location.href='notifications.html'" title="Notifications">
+                    <i class="fas fa-bell fa-lg text-muted cursor-pointer"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                </div>
+                <div class="d-flex align-items-center gap-2 cursor-pointer" onclick="window.location.href='profile.html'" title="View Profile">
+                    <img src="https://ui-avatars.com/api/?name=User&background=E53935&color=fff" class="rounded-circle user-avatar-display" width="40" height="40">
+                    <div class="d-none d-sm-block"><p class="fw-bold mb-0 small user-name-display text-capitalize">User Name</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="vm-card text-center h-100">
+                    <div class="position-relative d-inline-block mb-4">
+                        <img src="https://ui-avatars.com/api/?name=User&background=E53935&color=fff&size=128" class="rounded-circle border border-4 border-white shadow-sm user-avatar-display" width="128" height="128">
+                    </div>
+                    <h4 class="fw-bold mb-1 user-name-display text-capitalize">User Name</h4>
+                    <p class="text-muted mb-4" id="profileSince">Member since ...</p>
+                    <div class="bg-indigo bg-opacity-10 rounded-4 p-3 mb-4">
+                        <h2 class="fw-bold text-primary mb-0" id="profileBloodGroup">--</h2>
+                        <p class="text-primary smaller fw-bold mb-0">Blood Group</p>
+                    </div>
+                    <div class="text-start space-y-3">
+                        <div class="d-flex align-items-center mb-3"><i class="fas fa-phone text-muted me-3"></i><div><p class="smaller text-muted mb-0">Mobile Number</p><p class="small fw-bold mb-0" id="profileMobile">--</p></div></div>
+                        <div class="d-flex align-items-center mb-3"><i class="fas fa-envelope text-muted me-3"></i><div><p class="smaller text-muted mb-0">Email</p><p class="small fw-bold mb-0" id="profileEmail">--</p></div></div>
+                        <div class="d-flex align-items-center mb-3"><i class="fas fa-map-marker-alt text-muted me-3"></i><div><p class="smaller text-muted mb-0">Location</p><p class="small fw-bold mb-0" id="profileLocation">--</p></div></div>
+                        <div class="d-flex align-items-center"><i class="fas fa-calendar-alt text-muted me-3"></i><div><p class="smaller text-muted mb-0">Last Donation</p><p class="small fw-bold mb-0" id="profileLastDonation">--</p></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="vm-card mb-4">
+                    <h5 class="fw-bold mb-4">Donation Impact</h5>
+                    <div class="row g-3">
+                        <div class="col-sm-4"><div class="bg-light p-4 rounded-4 text-center"><h3 class="fw-bold text-indigo mb-0" id="statDonations">0</h3><p class="text-muted smaller mb-0">Donations</p></div></div>
+                        <div class="col-sm-4"><div class="bg-light p-4 rounded-4 text-center"><h3 class="fw-bold text-success mb-0" id="statLives">0</h3><p class="text-muted smaller mb-0">Lives Impacted</p></div></div>
+                        <div class="col-sm-4"><div class="bg-light p-4 rounded-4 text-center"><h3 class="fw-bold text-danger mb-0" id="statEmergSolved">0</h3><p class="text-muted smaller mb-0">Emergencies Solved</p></div></div>
+                    </div>
+                </div>
+
+                <div class="vm-card">
+                    <h5 class="fw-bold mb-4">Recent Donation History</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light"><tr class="text-muted smaller"><th class="border-0">Date</th><th class="border-0">Hospital</th><th class="border-0">Units</th><th class="border-0 text-end">Status</th></tr></thead>
+                            <tbody id="donationHistoryBody">
+                                <tr><td colspan="4" class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm me-2"></span>Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/chatbot.js"></script>
+    <script>
+    async function pageInit() {
+        if (!currentProfile) return;
+        const p = currentProfile;
+
+        // Populate profile card
+        document.getElementById('profileBloodGroup').textContent = p.blood_group || '--';
+        document.getElementById('profileMobile').textContent = p.mobile || '--';
+        document.getElementById('profileEmail').textContent = p.email || '--';
+        document.getElementById('profileLocation').textContent = [p.city, p.district, p.state].filter(Boolean).join(', ') || '--';
+        document.getElementById('profileLastDonation').textContent = p.last_donation_date ? formatDate(p.last_donation_date) : 'Never';
+        document.getElementById('profileSince').textContent = 'Member since ' + formatDate(p.created_at);
+
+        // Load donation history
+        const donations = await DB.getDonationHistory(p.id);
+        const tbody = document.getElementById('donationHistoryBody');
+        document.getElementById('statDonations').textContent = donations.length;
+        document.getElementById('statLives').textContent = donations.length * 3; // Each donation saves ~3 lives
+        document.getElementById('statEmergSolved').textContent = donations.filter(d => d.status === 'Completed').length;
+
+        if (donations.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No donation history yet</td></tr>';
+        } else {
+            tbody.innerHTML = donations.map(d => `
+                <tr>
+                    <td class="small fw-bold">${formatDate(d.donation_date)}</td>
+                    <td class="small text-muted">${d.hospital}</td>
+                    <td class="small fw-bold">${d.units} Unit${d.units > 1 ? 's' : ''}</td>
+                    <td class="text-end"><span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">${d.status}</span></td>
+                </tr>`).join('');
+        }
+    }
+    </script>
+</body>
+</html>

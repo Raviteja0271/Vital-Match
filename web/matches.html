@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matches - VitalMatch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50 flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white border-r border-gray-200 flex-shrink-0 hidden md:flex flex-col">
+        <div class="p-6 flex items-center mb-6">
+            <div class="w-8 h-8 bg-primary rounded flex items-center justify-center mr-3">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+            </div>
+            <span class="text-xl font-bold text-gray-800">VitalMatch</span>
+        </div>
+        <nav class="flex-grow">
+            <ul class="space-y-1">
+                <li><a href="dashboard.html" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 transition-all"><svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg> Dashboard</a></li>
+                <li><a href="vitals.html" class="flex items-center px-6 py-3 text-gray-600 hover:bg-gray-50 transition-all"><svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg> Vitals</a></li>
+                <li><a href="matches.html" class="sidebar-item-active flex items-center px-6 py-3 transition-all"><svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg> Matches</a></li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col overflow-hidden">
+        <header class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-8">
+            <h2 class="text-xl font-semibold text-gray-800">Discover Matches</h2>
+            <div class="flex items-center space-x-2">
+                <span class="text-sm text-gray-500">Filter by:</span>
+                <select class="text-sm border-gray-200 rounded-lg py-1 px-2 outline-none">
+                    <option>Compatibility Score</option>
+                    <option>Nearby</option>
+                    <option>Health Goals</option>
+                </select>
+            </div>
+        </header>
+
+        <div class="flex-grow p-8 overflow-y-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Match Card 1 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all">
+                    <div class="h-32 bg-primary relative">
+                        <div class="absolute -bottom-10 left-6">
+                            <img src="https://ui-avatars.com/api/?name=Sarah+Miller&size=80&background=fff&color=0052cc" class="w-20 h-20 rounded-2xl border-4 border-white shadow-sm" alt="Sarah">
+                        </div>
+                        <div class="absolute top-4 right-4 bg-white/20 backdrop-blur-md text-white px-2 py-1 rounded-lg text-xs font-bold">98% Match</div>
+                    </div>
+                    <div class="pt-12 p-6">
+                        <h4 class="text-xl font-bold text-gray-900">Sarah Miller</h4>
+                        <p class="text-gray-500 text-sm mb-4">Cardio & Yoga Enthusiast</p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-full font-medium">Morning Person</span>
+                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-full font-medium">Healthy Eater</span>
+                        </div>
+                        <button class="w-full border border-primary text-primary font-bold py-2 rounded-xl hover:bg-primary hover:text-white transition-all">
+                            Connect Now
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Match Card 2 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all">
+                    <div class="h-32 bg-blue-400 relative">
+                        <div class="absolute -bottom-10 left-6">
+                            <img src="https://ui-avatars.com/api/?name=Michael+Chen&size=80&background=fff&color=60a5fa" class="w-20 h-20 rounded-2xl border-4 border-white shadow-sm" alt="Michael">
+                        </div>
+                        <div class="absolute top-4 right-4 bg-white/20 backdrop-blur-md text-white px-2 py-1 rounded-lg text-xs font-bold">92% Match</div>
+                    </div>
+                    <div class="pt-12 p-6">
+                        <h4 class="text-xl font-bold text-gray-900">Michael Chen</h4>
+                        <p class="text-gray-500 text-sm mb-4">Strength Training Specialist</p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-full font-medium">Evening Workouts</span>
+                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-full font-medium">Marathon Runner</span>
+                        </div>
+                        <button class="w-full border border-primary text-primary font-bold py-2 rounded-xl hover:bg-primary hover:text-white transition-all">
+                            Connect Now
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Match Card 3 -->
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all">
+                    <div class="h-32 bg-purple-500 relative">
+                        <div class="absolute -bottom-10 left-6">
+                            <img src="https://ui-avatars.com/api/?name=Emma+Wilson&size=80&background=fff&color=a855f7" class="w-20 h-20 rounded-2xl border-4 border-white shadow-sm" alt="Emma">
+                        </div>
+                        <div class="absolute top-4 right-4 bg-white/20 backdrop-blur-md text-white px-2 py-1 rounded-lg text-xs font-bold">89% Match</div>
+                    </div>
+                    <div class="pt-12 p-6">
+                        <h4 class="text-xl font-bold text-gray-900">Emma Wilson</h4>
+                        <p class="text-gray-500 text-sm mb-4">Meditation & Mental Health</p>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-full font-medium">Mindfulness</span>
+                            <span class="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded-full font-medium">Vegetarian</span>
+                        </div>
+                        <button class="w-full border border-primary text-primary font-bold py-2 rounded-xl hover:bg-primary hover:text-white transition-all">
+                            Connect Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

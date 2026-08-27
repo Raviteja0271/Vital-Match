@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitalMatch - Reports</title>
+    <script>if(localStorage.getItem('vm_theme')==='dark')document.documentElement.classList.add('dark-mode');</script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar d-none d-lg-block">
+        <div class="mb-5 text-center"><div class="py-3"><svg width="100" height="100" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="250" cy="220" r="190" stroke="#4F46E5" stroke-width="25"/><path d="M250 470C250 470 426 310 426 190C426 100 346 30 256 30C166 30 86 100 86 190C86 310 256 470 256 470Z" fill="#EF4444"/><path d="M256 340C256 340 366 250 366 170C366 110 316 70 256 70C196 70 146 110 146 170C146 250 256 340 256 340Z" fill="white" fill-opacity="0.2"/><path d="M256 270C285 270 306 247 306 215C306 185 256 120 256 120C256 120 206 185 206 215C206 247 227 270 256 270Z" fill="white"/></svg><h4 class="fw-bold mt-2" style="color:#1E293B;"><span style="color:#EF4444;">Vital</span>Match</h4></div></div>
+        <div class="nav flex-column">
+            <a href="dashboard.html" class="sidebar-link"><i class="fas fa-columns"></i> <span data-i18n="dashboard">Dashboard</span></a>
+            <a href="emergency-feed.html" class="sidebar-link"><i class="fas fa-broadcast-tower"></i> <span data-i18n="emergency_feed">Emergency Feed</span></a>
+            <a href="search-donors.html" class="sidebar-link"><i class="fas fa-search"></i> <span data-i18n="search_donors">Search Donors</span></a>
+            <a href="become-donor.html" class="sidebar-link"><i class="fas fa-hand-holding-medical"></i> <span data-i18n="become_donor">Become Donor</span></a>
+            <a href="notifications.html" class="sidebar-link"><i class="fas fa-bell"></i> <span data-i18n="notifications">Notifications</span></a>
+            <a href="reports.html" class="sidebar-link active"><i class="fas fa-file-alt"></i> <span data-i18n="reports">Reports</span></a>
+            <a href="profile.html" class="sidebar-link"><i class="fas fa-user"></i> <span data-i18n="profile">Profile</span></a>
+            <a href="settings.html" class="sidebar-link"><i class="fas fa-cog"></i> <span data-i18n="settings">Settings</span></a>
+            <hr class="my-4 text-muted">
+            <a href="index.html" class="sidebar-link text-danger"><i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">Logout</span></a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <h2 class="fw-bold mb-0">Report System</h2>
+            <div class="d-flex align-items-center gap-3">
+                <div class="position-relative cursor-pointer" onclick="window.location.href='notifications.html'" title="Notifications">
+                    <i class="fas fa-bell fa-lg text-muted cursor-pointer"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                </div>
+                <div class="d-flex align-items-center gap-2 cursor-pointer" onclick="window.location.href='profile.html'" title="View Profile">
+                    <img src="https://ui-avatars.com/api/?name=User&background=E53935&color=fff" class="rounded-circle user-avatar-display" width="40" height="40">
+                    <div class="d-none d-sm-block"><p class="fw-bold mb-0 small user-name-display text-capitalize">User Name</p></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="vm-card h-100">
+                    <div class="stat-icon bg-danger bg-opacity-10 text-danger mb-4"><i class="fas fa-exclamation-triangle fa-lg"></i></div>
+                    <h5 class="fw-bold mb-3">Report Emergency Request</h5>
+                    <p class="text-muted small mb-4">Found a fake or spam emergency request? Report it here.</p>
+                    <form id="reportEmergencyForm">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Emergency Subject</label>
+                            <input type="text" id="emergSubject" class="form-control bg-light border-0 py-2 rounded-3" placeholder="e.g. Fake request by..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Reason for Reporting</label>
+                            <select id="emergReason" class="form-select bg-light border-0 py-2 rounded-3" required>
+                                <option value="" disabled selected>Choose reason...</option>
+                                <option>Fake Information</option><option>Spam Request</option><option>Invalid Contact</option><option>Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold">Additional Details</label>
+                            <textarea id="emergDetails" class="form-control bg-light border-0 py-2 rounded-3" rows="3" placeholder="Describe the issue..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-indigo w-100 py-3">Submit Report</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="vm-card h-100">
+                    <div class="stat-icon bg-primary bg-opacity-10 text-primary mb-4"><i class="fas fa-user-slash fa-lg"></i></div>
+                    <h5 class="fw-bold mb-3">Report Fake Donor</h5>
+                    <p class="text-muted small mb-4">Report inactive, abusive, or fake donor accounts.</p>
+                    <form id="reportDonorForm">
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Donor Mobile Number</label>
+                            <input type="tel" id="donorMobile" class="form-control bg-light border-0 py-2 rounded-3" placeholder="e.g. +91 9876543210" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Reason for Reporting</label>
+                            <select id="donorReason" class="form-select bg-light border-0 py-2 rounded-3" required>
+                                <option value="" disabled selected>Choose reason...</option>
+                                <option>Unreachable Number</option><option>Refused to Donate</option><option>Demanded Money</option><option>Abusive Behavior</option><option>Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold">Additional Details</label>
+                            <textarea id="donorDetails" class="form-control bg-light border-0 py-2 rounded-3" rows="3" placeholder="Describe what happened..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-indigo w-100 py-3">Submit Report</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-12 mt-5">
+                <div class="vm-card">
+                    <h5 class="fw-bold mb-4">Your Recent Reports</h5>
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead><tr class="text-muted smaller"><th>Date</th><th>Report Type</th><th>Subject</th><th>Reason</th><th>Status</th></tr></thead>
+                            <tbody id="reportsTableBody">
+                                <tr><td colspan="5" class="text-center text-muted py-4"><span class="spinner-border spinner-border-sm me-2"></span>Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/chatbot.js"></script>
+    <script>
+    async function pageInit() {
+        if (!currentProfile) return;
+
+        // Pre-fill donor mobile from URL param (from search-donors report button)
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('donor')) document.getElementById('donorMobile').value = params.get('donor');
+
+        // Load existing reports
+        await loadReports();
+
+        // Emergency report form
+        document.getElementById('reportEmergencyForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+            const { data, error } = await DB.createReport({
+                reporter_id: currentProfile.id,
+                report_type: 'emergency',
+                subject: document.getElementById('emergSubject').value,
+                reason: document.getElementById('emergReason').value,
+                details: document.getElementById('emergDetails').value
+            });
+            btn.disabled = false; btn.innerHTML = 'Submit Report';
+            if (!error) { e.target.reset(); showToast('Emergency report submitted!'); await loadReports(); }
+            else showToast('Failed to submit report.', 'danger');
+        });
+
+        // Donor report form
+        document.getElementById('reportDonorForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Submitting...';
+            const { data, error } = await DB.createReport({
+                reporter_id: currentProfile.id,
+                report_type: 'donor',
+                subject: document.getElementById('donorMobile').value,
+                reason: document.getElementById('donorReason').value,
+                details: document.getElementById('donorDetails').value,
+                target_donor_mobile: document.getElementById('donorMobile').value
+            });
+            btn.disabled = false; btn.innerHTML = 'Submit Report';
+            if (!error) { e.target.reset(); showToast('Donor report submitted!'); await loadReports(); }
+            else showToast('Failed to submit report.', 'danger');
+        });
+    }
+
+    async function loadReports() {
+        const reports = await DB.getMyReports(currentProfile.id);
+        const tbody = document.getElementById('reportsTableBody');
+        if (reports.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No reports submitted yet</td></tr>';
+        } else {
+            const statusColors = { 'Under Review': 'warning', 'Resolved': 'success', 'Dismissed': 'secondary' };
+            tbody.innerHTML = reports.map(r => `
+                <tr>
+                    <td class="small">${formatDate(r.created_at)}</td>
+                    <td class="small"><span class="badge ${r.report_type === 'emergency' ? 'bg-danger' : 'bg-primary'} bg-opacity-10 ${r.report_type === 'emergency' ? 'text-danger' : 'text-primary'} rounded-pill px-2">${r.report_type}</span></td>
+                    <td class="small fw-bold">${r.subject}</td>
+                    <td class="small text-muted">${r.reason}</td>
+                    <td><span class="badge bg-${statusColors[r.status] || 'secondary'} bg-opacity-10 text-${statusColors[r.status] || 'secondary'} rounded-pill px-3">${r.status}</span></td>
+                </tr>`).join('');
+        }
+    }
+    </script>
+</body>
+</html>
