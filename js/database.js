@@ -56,9 +56,24 @@ const DB = {
     // ========== EMERGENCY REQUESTS ==========
 
     async createEmergency(emergency) {
+        // Sanitize payload to match emergency_requests table schema
+        const fullLoc = emergency.location || [emergency.city, emergency.district, emergency.state].filter(Boolean).join(', ') || 'Not specified';
+        
+        const cleanPayload = {
+            user_id: emergency.user_id,
+            patient_name: emergency.patient_name,
+            blood_group: emergency.blood_group,
+            hospital_name: emergency.hospital_name,
+            contact_number: emergency.contact_number,
+            location: fullLoc,
+            notes: emergency.notes || '',
+            priority: emergency.priority || 'High',
+            status: emergency.status || 'Active'
+        };
+
         const { data, error } = await supabaseClient
             .from('emergency_requests')
-            .insert(emergency)
+            .insert(cleanPayload)
             .select()
             .single();
         if (error) console.error('createEmergency:', error.message);
@@ -203,7 +218,6 @@ const DB = {
     async markEmergencyCompletedAndRecordDonation(emergencyId, donorPhoneOrName) {
         const todayDate = new Date().toISOString().split('T')[0];
         
-        // Update emergency request status to Completed
         if (emergencyId) {
             await supabaseClient
                 .from('emergency_requests')
@@ -224,7 +238,6 @@ const DB = {
         }
 
         if (matchedDonor) {
-            // Update donor last_donation_date & set is_available to false
             await supabaseClient
                 .from('profiles')
                 .update({ 
@@ -233,7 +246,6 @@ const DB = {
                 })
                 .eq('id', matchedDonor.id);
 
-            // Fetch previous donation count
             const { data: previousNotifs } = await supabaseClient
                 .from('notifications')
                 .select('*')
@@ -243,7 +255,6 @@ const DB = {
             const count = (previousNotifs ? previousNotifs.length : 0) + 1;
             const ordinal = count === 1 ? '1st' : count === 2 ? '2nd' : count === 3 ? '3rd' : `${count}th`;
 
-            // Create DONATION_SUCCESS notification
             await supabaseClient
                 .from('notifications')
                 .insert({
