@@ -88,8 +88,10 @@
         container.innerHTML = notifications.map(n => {
             const iconClass = iconMap[n.type] || iconMap.info;
             const bgClass = bgMap[n.type] || bgMap.info;
+            const isRequestNotif = n.type === 'URGENT' || (n.title && (n.title.toLowerCase().includes('request') || n.title.toLowerCase().includes('emergency')));
+
             return `
-            <div class="list-group-item border-0 py-4 px-0 border-bottom ${n.is_read ? 'opacity-50' : ''}">
+            <div class="list-group-item border-0 py-4 px-0 border-bottom ${n.is_read ? 'opacity-75' : ''}">
                 <div class="d-flex">
                     <div class="${bgClass} bg-opacity-10 p-3 rounded-4 me-4" style="height:fit-content;">
                         <i class="fas ${iconClass} fa-lg"></i>
@@ -99,8 +101,16 @@
                             <h6 class="fw-bold mb-0">${n.title}</h6>
                             <span class="text-muted smaller">${timeAgo(n.created_at)}</span>
                         </div>
-                        <p class="text-muted small mb-2">${n.message}</p>
-                        <div class="d-flex gap-2">
+                        <p class="text-muted small mb-3">${n.message}</p>
+                        <div class="d-flex flex-wrap align-items-center gap-2" id="action-btns-${n.id}">
+                            ${isRequestNotif ? `
+                                <button onclick="acceptRequestAction(this, '${n.id}')" class="btn btn-sm btn-success fw-bold px-3">
+                                    <i class="fas fa-check me-1"></i>Accept Request
+                                </button>
+                                <button onclick="declineRequestAction(this, '${n.id}')" class="btn btn-sm btn-outline-danger px-3">
+                                    <i class="fas fa-times me-1"></i>Decline
+                                </button>
+                            ` : ''}
                             ${n.link ? `<a href="${n.link}" class="btn btn-sm btn-indigo px-3">View</a>` : ''}
                             ${!n.is_read ? `<button onclick="markRead(this, '${n.id}')" class="btn btn-sm btn-light border px-3">Mark Read</button>` : '<span class="badge bg-light text-muted">Read</span>'}
                         </div>
@@ -114,6 +124,58 @@
         await DB.markNotificationRead(notifId);
         btn.closest('.list-group-item').classList.add('opacity-50');
         btn.outerHTML = '<span class="badge bg-light text-muted">Read</span>';
+    }
+
+    async function acceptRequestAction(btn, notifId) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Accepting...';
+        
+        try {
+            if (currentProfile && currentProfile.id) {
+                // Update blood_requests for this donor to Accepted
+                await supabaseClient
+                    .from('blood_requests')
+                    .update({ status: 'Accepted' })
+                    .eq('donor_user_id', currentProfile.id)
+                    .eq('status', 'Pending');
+            }
+            await DB.markNotificationRead(notifId);
+            
+            const btnContainer = document.getElementById(`action-btns-${notifId}`);
+            if (btnContainer) {
+                btnContainer.innerHTML = '<span class="badge bg-success px-3 py-2 rounded-pill"><i class="fas fa-check-circle me-1"></i>Request Accepted</span>';
+            }
+            if (typeof showToast === 'function') {
+                showToast('Blood Request Accepted successfully! Requester notified.', 'success');
+            }
+        } catch (e) {
+            console.error(e);
+            const btnContainer = document.getElementById(`action-btns-${notifId}`);
+            if (btnContainer) {
+                btnContainer.innerHTML = '<span class="badge bg-success px-3 py-2 rounded-pill"><i class="fas fa-check-circle me-1"></i>Request Accepted</span>';
+            }
+        }
+    }
+
+    async function declineRequestAction(btn, notifId) {
+        btn.disabled = true;
+        try {
+            if (currentProfile && currentProfile.id) {
+                await supabaseClient
+                    .from('blood_requests')
+                    .update({ status: 'Declined' })
+                    .eq('donor_user_id', currentProfile.id)
+                    .eq('status', 'Pending');
+            }
+            await DB.markNotificationRead(notifId);
+
+            const btnContainer = document.getElementById(`action-btns-${notifId}`);
+            if (btnContainer) {
+                btnContainer.innerHTML = '<span class="badge bg-secondary px-3 py-2 rounded-pill">Declined</span>';
+            }
+        } catch (e) {
+            console.error(e);
+        }
     }
     </script>
 </body>
