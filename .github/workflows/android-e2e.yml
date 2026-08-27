@@ -6,8 +6,6 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
-  schedule:
-    - cron: '0 0 * * *'
 
 permissions:
   contents: write
@@ -33,34 +31,29 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # Stage 3: Setup Android SDK & Environment
+      # Stage 3: Setup Android SDK
       - name: Stage 3 - Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      # Stage 4: Install Android & Gradle Dependencies
-      - name: Stage 4 - Install Dependencies
+      # Stage 4: Install Dependencies & Build APK
+      - name: Stage 4 - Build Debug APK
         run: |
           chmod +x gradlew || true
-          ./gradlew dependencies --continue || true
-
-      # Stage 5: Build Debug APK
-      - name: Stage 5 - Build Debug APK
-        run: |
           ./gradlew assembleDebug --stacktrace || true
 
-      # Stage 6: Setup Node.js & Appium Server Engine
-      - name: Stage 6 - Setup Node, Appium & Drivers
+      # Stage 5: Setup Node.js & Appium Server Engine
+      - name: Stage 5 - Setup Node & Appium Server
         run: |
           npm install -g appium
           appium driver install uiautomator2 || true
           mkdir -p logs
           nohup appium --log logs/appium.log &
           sleep 3
-          echo "Appium Server Status Check:"
+          echo "Appium Server Health Check:"
           curl -s http://127.0.0.1:4723/status || echo "Appium server initialized"
 
-      # Stage 7: Execute Appium E2E Test Suite (430 Test Cases)
-      - name: Stage 7 - Execute Appium E2E Suite & Multi-Format Reports
+      # Stage 6: Execute Appium E2E Test Suite (430 Test Cases)
+      - name: Stage 6 - Execute Appium E2E Suite & Reports
         run: |
           python3 -m pip install openpyxl pytest requests aiohttp pandas Appium-Python-Client
           if [ -f "automation/requirements.txt" ]; then
@@ -68,8 +61,8 @@ jobs:
           fi
           python3 automation/runners/run_suite.py || true
 
-      # Stage 8: Verify & Prepare Reports for GitHub Pages
-      - name: Stage 8 - Prepare HTML & Excel Reports
+      # Stage 7: Prepare Reports for GitHub Pages
+      - name: Stage 7 - Prepare HTML & Excel Reports
         run: |
           mkdir -p reports/latest reports/HTML
           if [ -f "Test Results/HTML/execution-report.html" ]; then
@@ -79,8 +72,8 @@ jobs:
             cp "Test Results/HTML/execution-report.html" reports/latest/execution-report.html
           fi
 
-      # Stage 9: Publish Action Step Summary
-      - name: Stage 9 - Publish Action Step Summary
+      # Stage 8: Publish Action Step Summary
+      - name: Stage 8 - Publish Action Step Summary
         if: always()
         run: |
           if [ -f "Test Results/Summary/summary.md" ]; then
@@ -89,8 +82,8 @@ jobs:
             cat "reports/latest/summary.md" >> $GITHUB_STEP_SUMMARY
           fi
 
-      # Stage 10: Upload Test Artifacts (Excel, HTML, JSON)
-      - name: Stage 10 - Upload Test Artifacts (30 Days Retention)
+      # Stage 9: Upload Test Artifacts
+      - name: Stage 9 - Upload Test Artifacts
         uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -101,8 +94,8 @@ jobs:
           if-no-files-found: ignore
           retention-days: 30
 
-      # Stage 11: Deploy Reports to GitHub Pages
-      - name: Stage 11 - Deploy Reports to GitHub Pages
+      # Stage 10: Deploy Reports to GitHub Pages
+      - name: Stage 10 - Deploy Reports to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
         continue-on-error: true
