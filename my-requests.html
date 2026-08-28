@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitalMatch - My Requests</title>
+    <script>if(localStorage.getItem('vm_theme')==='dark')document.documentElement.classList.add('dark-mode');</script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar d-none d-lg-block">
+        <div class="mb-5 text-center"><div class="py-3"><svg width="100" height="100" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="250" cy="220" r="190" stroke="#4F46E5" stroke-width="25"/><path d="M250 470C250 470 426 310 426 190C426 100 346 30 256 30C166 30 86 100 86 190C86 310 256 470 256 470Z" fill="#EF4444"/><path d="M256 340C256 340 366 250 366 170C366 110 316 70 256 70C196 70 146 110 146 170C146 250 256 340 256 340Z" fill="white" fill-opacity="0.2"/><path d="M256 270C285 270 306 247 306 215C306 185 256 120 256 120C256 120 206 185 206 215C206 247 227 270 256 270Z" fill="white"/></svg><h4 class="fw-bold mt-2" style="color:#1E293B;"><span style="color:#EF4444;">Vital</span>Match</h4></div></div>
+        <div class="nav flex-column">
+            <a href="dashboard.html" class="sidebar-link"><i class="fas fa-columns"></i> <span data-i18n="dashboard">Dashboard</span></a>
+            <a href="emergency-feed.html" class="sidebar-link"><i class="fas fa-broadcast-tower"></i> <span data-i18n="emergency_feed">Emergency Feed</span></a>
+            <a href="search-donors.html" class="sidebar-link"><i class="fas fa-search"></i> <span data-i18n="search_donors">Search Donors</span></a>
+            <a href="become-donor.html" class="sidebar-link"><i class="fas fa-hand-holding-medical"></i> <span data-i18n="become_donor">Become Donor</span></a>
+            <a href="my-requests.html" class="sidebar-link active"><i class="fas fa-list"></i> <span>My Requests</span></a>
+            <a href="notifications.html" class="sidebar-link"><i class="fas fa-bell"></i> <span data-i18n="notifications">Notifications</span></a>
+            <a href="reports.html" class="sidebar-link"><i class="fas fa-file-alt"></i> <span data-i18n="reports">Reports</span></a>
+            <a href="profile.html" class="sidebar-link"><i class="fas fa-user"></i> <span data-i18n="profile">Profile</span></a>
+            <a href="settings.html" class="sidebar-link"><i class="fas fa-cog"></i> <span data-i18n="settings">Settings</span></a>
+            <hr class="my-4 text-muted">
+            <a href="index.html" class="sidebar-link text-danger"><i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">Logout</span></a>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="fw-bold mb-1">My Requests</h2>
+                <div id="userLocationText" class="text-muted small"><i class="fas fa-map-marker-alt text-danger me-1"></i> <span class="fw-bold">Detecting location...</span></div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="position-relative cursor-pointer" onclick="window.location.href='notifications.html'" title="Notifications">
+                    <i class="fas fa-bell fa-lg text-muted cursor-pointer"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                </div>
+                <div class="d-flex align-items-center gap-2 cursor-pointer" onclick="window.location.href='profile.html'" title="View Profile">
+                    <img src="https://ui-avatars.com/api/?name=User&background=E53935&color=fff" class="rounded-circle user-avatar-display" width="40" height="40">
+                    <div class="d-none d-sm-block"><p class="fw-bold mb-0 small user-name-display text-capitalize">User Name</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3 Filter Tabs Requested by User -->
+        <div class="d-flex gap-2 mb-4 bg-light p-2 rounded-pill border" style="width: fit-content;">
+            <button onclick="switchTab('all')" id="tab-all" class="btn btn-primary fw-bold px-4 rounded-pill">All Requests</button>
+            <button onclick="switchTab('Accepted')" id="tab-Accepted" class="btn btn-outline-success fw-bold px-4 rounded-pill">Accepted Requests</button>
+            <button onclick="switchTab('Completed')" id="tab-Completed" class="btn btn-outline-info fw-bold px-4 rounded-pill">Completed Donations</button>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <div id="myRequestsContainer" class="row g-4">
+                    <div class="col-12 text-center py-5"><span class="spinner-border text-primary"></span><p class="mt-2 text-muted">Loading your requests...</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/chatbot.js"></script>
+    <script>
+    let allRequestsList = [];
+    let currentFilter = 'all';
+
+    async function pageInit() {
+        if (!currentProfile) return;
+        allRequestsList = await DB.getMyBloodRequests(currentProfile.id);
+        renderRequests();
+    }
+
+    function switchTab(filterName) {
+        currentFilter = filterName;
+        ['all', 'Accepted', 'Completed'].forEach(f => {
+            const btn = document.getElementById(`tab-${f}`);
+            if (btn) {
+                if (f === filterName) {
+                    btn.className = `btn btn-${f === 'Accepted' ? 'success' : f === 'Completed' ? 'info' : 'primary'} fw-bold px-4 rounded-pill`;
+                } else {
+                    btn.className = `btn btn-outline-${f === 'Accepted' ? 'success' : f === 'Completed' ? 'info' : 'secondary'} fw-bold px-4 rounded-pill`;
+                }
+            }
+        });
+        renderRequests();
+    }
+
+    function renderRequests() {
+        const container = document.getElementById('myRequestsContainer');
+        const filtered = currentFilter === 'all' 
+            ? allRequestsList 
+            : allRequestsList.filter(r => r.status === currentFilter);
+
+        if (!filtered || filtered.length === 0) {
+            const tabName = currentFilter === 'all' ? 'requests' : currentFilter === 'Accepted' ? 'accepted requests' : 'completed donations';
+            container.innerHTML = `
+                <div class="col-12 text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3 opacity-50"></i>
+                    <h5 class="text-muted">No ${tabName} found</h5>
+                    <p class="text-muted">Requests from patients or receptors will be managed here.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = filtered.map(r => {
+            const isPending = r.status === 'Pending';
+            const isAccepted = r.status === 'Accepted';
+            const isCompleted = r.status === 'Completed';
+
+            const statusBadge = isCompleted
+                ? '<span class="badge bg-info text-dark px-3 py-2 rounded-pill"><i class="fas fa-check-double me-1"></i>Completed Donation</span>'
+                : isAccepted
+                ? '<span class="badge bg-success px-3 py-2 rounded-pill"><i class="fas fa-check-circle me-1"></i>Accepted</span>'
+                : r.status === 'Declined'
+                ? '<span class="badge bg-secondary px-3 py-2 rounded-pill">Declined</span>'
+                : '<span class="badge bg-warning text-dark px-3 py-2 rounded-pill">Pending</span>';
+
+            return `
+            <div class="col-md-6">
+                <div class="vm-card h-100 p-4 border rounded-4 shadow-sm">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h5 class="fw-bold mb-1">${r.requester_name}</h5>
+                            <p class="text-muted small mb-0"><i class="fas fa-phone me-2 text-primary"></i>${r.requester_phone}</p>
+                        </div>
+                        <div>${statusBadge}</div>
+                    </div>
+                    <div class="text-muted smaller mb-4">
+                        <i class="fas fa-clock me-1"></i>Requested ${timeAgo(r.created_at)}
+                    </div>
+                    ${isPending ? `
+                        <div class="d-flex gap-2" id="req-actions-${r.id}">
+                            <button onclick="acceptRequestItem(this, '${r.id}')" class="btn btn-success fw-bold flex-grow-1 py-2">
+                                <i class="fas fa-check me-1"></i>Accept Request
+                            </button>
+                            <button onclick="declineRequestItem(this, '${r.id}')" class="btn btn-outline-danger flex-grow-1 py-2">
+                                <i class="fas fa-times me-1"></i>Decline
+                            </button>
+                        </div>
+                    ` : isAccepted ? `
+                        <div class="d-flex flex-column gap-2" id="req-actions-${r.id}">
+                            <a href="tel:${r.requester_phone}" class="btn btn-indigo w-100 fw-bold py-2 mb-1">
+                                <i class="fas fa-phone-alt me-2"></i>Call Requester (${r.requester_phone})
+                            </a>
+                            <button onclick="completeDonationItem(this, '${r.id}')" class="btn btn-success w-100 fw-bold py-2 shadow-sm">
+                                <i class="fas fa-heart me-2"></i>Blood Donated (Mark Completed)
+                            </button>
+                            <button onclick="cancelRequestItem(this, '${r.id}')" class="btn btn-outline-danger w-100 fw-bold py-1 btn-sm">
+                                <i class="fas fa-ban me-2"></i>Cancel / Reject Request (Did Not Donate)
+                            </button>
+                        </div>
+                    ` : `
+                        <div class="alert alert-info text-center py-2 mb-0 fw-bold small">
+                            <i class="fas fa-check-double me-1"></i>Donation Completed & Profile Updated!
+                        </div>
+                    `}
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    async function acceptRequestItem(btn, reqId) {
+        btn.disabled = true;
+        await DB.updateBloodRequestStatus(reqId, 'Accepted');
+        allRequestsList = allRequestsList.map(r => r.id === reqId ? { ...r, status: 'Accepted' } : r);
+        renderRequests();
+        if (typeof showToast === 'function') showToast('Request Accepted! Moved to Accepted Requests tab.', 'success');
+    }
+
+    async function declineRequestItem(btn, reqId) {
+        btn.disabled = true;
+        await DB.updateBloodRequestStatus(reqId, 'Declined');
+        allRequestsList = allRequestsList.map(r => r.id === reqId ? { ...r, status: 'Declined' } : r);
+        renderRequests();
+    }
+
+    async function completeDonationItem(btn, reqId) {
+        const hospitalName = prompt('Enter Hospital Name for this blood donation:', 'General Hospital') || 'General Hospital';
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating Profile & Completing...';
+
+        await DB.completeBloodRequestDonation(reqId, currentProfile.id, hospitalName);
+        allRequestsList = allRequestsList.map(r => r.id === reqId ? { ...r, status: 'Completed' } : r);
+        
+        const todayDate = new Date().toISOString().split('T')[0];
+        currentProfile.last_donation_date = todayDate;
+        currentProfile.is_available = false;
+
+        // Switch to Completed tab to show the item in Completed Donations
+        switchTab('Completed');
+
+        if (typeof showToast === 'function') {
+            showToast(`Donation Completed! Moved to Completed Donations tab. Donor Profile updated with date ${todayDate}.`, 'success');
+        }
+    }
+
+    async function cancelRequestItem(btn, reqId) {
+        if (!confirm("Are you sure you want to cancel / reject this request? This will release your active request lock so you can accept other requests.")) return;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Cancelling...';
+
+        await DB.updateBloodRequestStatus(reqId, 'Cancelled');
+        allRequestsList = allRequestsList.map(r => r.id === reqId ? { ...r, status: 'Cancelled' } : r);
+
+        try {
+            const key = `vm_local_requests_${currentProfile.id}`;
+            let stored = JSON.parse(localStorage.getItem(key) || '[]');
+            stored = stored.map(r => (r.id === reqId || r.status === 'Accepted') ? { ...r, status: 'Cancelled' } : r);
+            localStorage.setItem(key, JSON.stringify(stored));
+        } catch (e) {}
+
+        renderRequests();
+        alert('Request Cancelled / Rejected! Active lock released. You can now accept other requests.');
+    }
+    </script>
+</body>
+</html>

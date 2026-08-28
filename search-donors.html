@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VitalMatch - Search Donors</title>
+    <script>if(localStorage.getItem('vm_theme')==='dark')document.documentElement.classList.add('dark-mode');</script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar d-none d-lg-block">
+        <div class="mb-5 text-center"><div class="py-3"><svg width="100" height="100" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="250" cy="220" r="190" stroke="#4F46E5" stroke-width="25"/><path d="M250 470C250 470 426 310 426 190C426 100 346 30 256 30C166 30 86 100 86 190C86 310 256 470 256 470Z" fill="#EF4444"/><path d="M256 340C256 340 366 250 366 170C366 110 316 70 256 70C196 70 146 110 146 170C146 250 256 340 256 340Z" fill="white" fill-opacity="0.2"/><path d="M256 270C285 270 306 247 306 215C306 185 256 120 256 120C256 120 206 185 206 215C206 247 227 270 256 270Z" fill="white"/></svg><h4 class="fw-bold mt-2" style="color:#1E293B;"><span style="color:#EF4444;">Vital</span>Match</h4></div></div>
+        <div class="nav flex-column">
+            <a href="dashboard.html" class="sidebar-link"><i class="fas fa-columns"></i> <span data-i18n="dashboard">Dashboard</span></a>
+            <a href="emergency-feed.html" class="sidebar-link"><i class="fas fa-broadcast-tower"></i> <span data-i18n="emergency_feed">Emergency Feed</span></a>
+            <a href="search-donors.html" class="sidebar-link active"><i class="fas fa-search"></i> <span data-i18n="search_donors">Search Donors</span></a>
+            <a href="become-donor.html" class="sidebar-link"><i class="fas fa-hand-holding-medical"></i> <span data-i18n="become_donor">Become Donor</span></a>
+            <a href="my-requests.html" class="sidebar-link"><i class="fas fa-list"></i> <span>My Requests</span></a>
+            <a href="notifications.html" class="sidebar-link"><i class="fas fa-bell"></i> <span data-i18n="notifications">Notifications</span></a>
+            <a href="reports.html" class="sidebar-link"><i class="fas fa-file-alt"></i> <span data-i18n="reports">Reports</span></a>
+            <a href="profile.html" class="sidebar-link"><i class="fas fa-user"></i> <span data-i18n="profile">Profile</span></a>
+            <a href="settings.html" class="sidebar-link"><i class="fas fa-cog"></i> <span data-i18n="settings">Settings</span></a>
+            <hr class="my-4 text-muted">
+            <a href="index.html" class="sidebar-link text-danger"><i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">Logout</span></a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="fw-bold mb-0">Search Blood Donors</h2>
+                <div id="userLocationText" class="text-muted small mt-1"><i class="fas fa-map-marker-alt text-danger me-1"></i> <span class="fw-bold">Detecting location...</span></div>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="position-relative cursor-pointer" onclick="window.location.href='notifications.html'" title="Notifications">
+                    <i class="fas fa-bell fa-lg text-muted cursor-pointer"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                </div>
+                <div class="d-flex align-items-center gap-2 cursor-pointer" onclick="window.location.href='profile.html'" title="View Profile">
+                    <img src="https://ui-avatars.com/api/?name=User&background=E53935&color=fff" class="rounded-circle user-avatar-display" width="40" height="40">
+                    <div class="d-none d-sm-block"><p class="fw-bold mb-0 small user-name-display text-capitalize">User Name</p></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Card -->
+        <div class="vm-card mb-5">
+            <h5 class="fw-bold mb-4"><i class="fas fa-filter text-primary me-2"></i>Search Filters</h5>
+            <form id="searchForm" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Blood Group</label>
+                    <select id="filterBlood" class="form-select bg-light border-0 py-2 rounded-3">
+                        <option value="all" selected>All Groups</option>
+                        <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                        <option>O+</option><option>O-</option><option>AB+</option><option>AB-</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">State</label>
+                    <select id="filterState" class="form-select bg-light border-0 py-2 rounded-3">
+                        <option value="" selected>Select State</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">District</label>
+                    <select id="filterDistrict" class="form-select bg-light border-0 py-2 rounded-3" disabled>
+                        <option value="" selected>Select District</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">City</label>
+                    <select id="filterCity" class="form-select bg-light border-0 py-2 rounded-3" disabled>
+                        <option value="" selected>Select City</option>
+                    </select>
+                </div>
+                <div class="col-12 text-end mt-4">
+                    <button type="reset" class="btn btn-light border me-2 px-4" onclick="resetFilters()">Clear</button>
+                    <button type="submit" id="searchBtn" class="btn btn-indigo px-5">
+                        <i class="fas fa-search me-2"></i>Search Donors
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <div id="donorResults" class="row g-4">
+            <div class="col-12 text-center py-5 text-muted">
+                <i class="fas fa-search fa-3x mb-3 opacity-25"></i>
+                <h5>Use the filters above to find donors</h5>
+                <p class="small">Select a blood group, state, or city to begin searching</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/database.js"></script>
+    <script src="js/india-locations.js"></script>
+    <script src="js/translations.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/chatbot.js"></script>
+    <script>
+    async function pageInit() {
+        // Setup cascading dropdowns
+        const stateEl = document.getElementById('filterState');
+        const districtEl = document.getElementById('filterDistrict');
+        const cityEl = document.getElementById('filterCity');
+
+        populateStates(stateEl);
+
+        stateEl.addEventListener('change', () => {
+            populateDistricts(districtEl, stateEl.value);
+            districtEl.disabled = !stateEl.value;
+            cityEl.innerHTML = '<option value="" selected>Select City</option>';
+            cityEl.disabled = true;
+        });
+
+        districtEl.addEventListener('change', () => {
+            populateCities(cityEl, stateEl.value, districtEl.value);
+            cityEl.disabled = !districtEl.value;
+        });
+
+        // Search form handler
+        document.getElementById('searchForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('searchBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Searching...';
+
+            const filters = {
+                blood_group: document.getElementById('filterBlood').value,
+                state: stateEl.value,
+                district: districtEl.value,
+                city: cityEl.value
+            };
+
+            const donors = await DB.searchDonors(filters);
+            const container = document.getElementById('donorResults');
+
+            if (donors.length === 0) {
+                container.innerHTML = `
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-user-slash fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No donors found</h5>
+                        <p class="text-muted">Try adjusting your search filters or select a different location.</p>
+                    </div>`;
+            } else {
+                container.innerHTML = `
+                    <div class="col-12 mb-2"><p class="text-muted fw-bold"><i class="fas fa-users me-2"></i>${donors.length} donor(s) found</p></div>
+                    ${donors.map(d => {
+                        const eligible = d.is_available;
+                        const lastDonation = d.last_donation_date
+                            ? Math.floor((new Date() - new Date(d.last_donation_date)) / 86400000) + ' days ago'
+                            : 'Never';
+
+                        let distText = '';
+                        if (currentProfile && (currentProfile.city || currentProfile.district) && (d.city || d.district)) {
+                            const userC = resolveCoordinates(currentProfile.city || currentProfile.district);
+                            const donorC = resolveCoordinates(d.city || d.district);
+                            if (userC && donorC) {
+                                const km = calculateDistanceKm(userC.lat, userC.lng, donorC.lat, donorC.lng);
+                                if (km !== null) {
+                                    distText = `<span class="badge bg-primary bg-opacity-10 text-primary rounded-pill ms-1"><i class="fas fa-route me-1"></i>${Math.round(km * 10) / 10} km</span>`;
+                                }
+                            }
+                        }
+
+                        return `
+                        <div class="col-md-6 col-xl-4">
+                            <div class="vm-card h-100">
+                                <div class="d-flex justify-content-between align-items-start mb-4">
+                                    <div class="d-flex align-items-center">
+                                        <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(d.full_name)}&background=random" class="rounded-circle me-3" width="50" height="50">
+                                        <div>
+                                            <h6 class="fw-bold mb-0">${d.full_name} ${distText}</h6>
+                                            <p class="text-muted smaller mb-0"><i class="fas fa-map-marker-alt me-1"></i>${[d.city, d.district, d.state].filter(Boolean).join(', ')}</p>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <span class="badge bg-danger rounded-pill mb-1">${d.blood_group || 'N/A'}</span><br>
+                                        <span class="badge ${eligible ? 'bg-success' : 'bg-warning text-dark'} rounded-pill small">${d.eligibility_info ? d.eligibility_info.statusText : (eligible ? 'Eligible to Donate' : 'Ineligible (<90 Days)')}</span>
+                                    </div>
+                                </div>
+                                <div class="bg-light p-3 rounded-4 mb-4">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="text-muted smaller">Last Donation</span>
+                                        <span class="fw-bold small">${lastDonation}</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-muted smaller">Mobile</span>
+                                        <span class="fw-bold small">${d.mobile || 'N/A'}</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex flex-column gap-2">
+                                    <div class="d-flex gap-2">
+                                        <a href="tel:${d.mobile}" class="btn btn-indigo flex-grow-1 ${eligible ? '' : 'disabled'}"><i class="fas fa-phone me-2"></i>Contact</a>
+                                        <button onclick="reportDonor('${d.mobile}')" class="btn btn-light border"><i class="fas fa-flag"></i></button>
+                                    </div>
+                                    <button onclick="requestDonor('${d.id}', '${(d.full_name || 'Donor').replace(/'/g, "\\'")}')" class="btn btn-dark w-100 fw-bold py-2 ${eligible ? '' : 'disabled'}">
+                                        <i class="fas fa-hand-holding-medical me-2"></i>Request Donor
+                                    </button>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('')}`;
+            }
+
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-search me-2"></i>Search Donors';
+        });
+    }
+
+    function resetFilters() {
+        document.getElementById('filterDistrict').innerHTML = '<option value="" selected>Select District</option>';
+        document.getElementById('filterDistrict').disabled = true;
+        document.getElementById('filterCity').innerHTML = '<option value="" selected>Select City</option>';
+        document.getElementById('filterCity').disabled = true;
+        document.getElementById('donorResults').innerHTML = '<div class="col-12 text-center py-5 text-muted"><i class="fas fa-search fa-3x mb-3 opacity-25"></i><h5>Use the filters above to find donors</h5></div>';
+    }
+
+    async function requestDonor(donorId, donorName) {
+        if (!currentProfile) {
+            showToast('Please log in to send a request.', 'danger');
+            return;
+        }
+        const requesterName = currentProfile.full_name || 'Requester';
+        const requesterPhone = currentProfile.mobile || 'N/A';
+
+        const canRequest = await DB.checkCanRequestToday(donorId, requesterPhone);
+        if (!canRequest) {
+            showToast(`You have already sent a request to ${donorName} today. Only 1 request per day is allowed.`, 'warning');
+            return;
+        }
+
+        showToast(`Sending request to ${donorName}...`, 'info');
+
+        try {
+            const { data, error } = await supabaseClient.from('blood_requests').insert({
+                donor_user_id: donorId,
+                requester_name: requesterName,
+                requester_phone: requesterPhone,
+                status: 'Pending'
+            }).select();
+
+            if (error) {
+                console.error('blood_requests error:', error);
+                showToast(`Error: ${error.message}`, 'danger');
+                return;
+            }
+
+            await supabaseClient.from('notifications').insert({
+                user_id: donorId,
+                title: 'New Blood Request Received',
+                message: `Urgent blood request from ${requesterName}. Contact: ${requesterPhone}`,
+                type: 'URGENT'
+            });
+
+            showToast(`Blood request sent to ${donorName}'s profile successfully!`, 'success');
+        } catch (err) {
+            console.error(err);
+            showToast(`Request sent to ${donorName}!`, 'success');
+        }
+    }
+
+    function reportDonor(mobile) {
+        window.location.href = `reports.html?donor=${mobile}`;
+    }
+    </script>
+</body>
+</html>
