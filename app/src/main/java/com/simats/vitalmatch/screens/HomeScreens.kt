@@ -205,13 +205,25 @@ fun HomeHeader(navController: NavController) {
                 }
             }
             
-            var userName by remember { mutableStateOf("Donor") }
+            var userName by remember { mutableStateOf("User") }
             LaunchedEffect(Unit) {
-                val currentUser = SupabaseClient.client.auth.currentUserOrNull()
-                val name = currentUser?.userMetadata?.get("full_name")?.toString()?.trim('"')
-                if (name != null) {
-                    userName = name
-                } else {
+                try {
+                    val currentUser = SupabaseClient.client.auth.currentUserOrNull()
+                    if (currentUser != null) {
+                        val prof = SupabaseClient.client.postgrest["profiles"]
+                            .select { filter { eq("id", currentUser.id) } }
+                            .decodeSingleOrNull<com.simats.vitalmatch.data.models.Donor>()
+                        if (prof != null && prof.full_name.isNotBlank()) {
+                            userName = prof.full_name
+                        } else {
+                            SupabaseClient.client.auth.signOut()
+                            Toast.makeText(context, "Account cleared from database. Please register.", Toast.LENGTH_LONG).show()
+                            navController.navigate(Screen.SignIn.route) {
+                                popUpTo(0) { inclusive = true }
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
                     userName = "User"
                 }
             }
