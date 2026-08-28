@@ -104,12 +104,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script>
-        // Redirect if already logged in
-        (async () => {
-            const session = await supabaseGetSession();
-            if (session) window.location.href = 'dashboard.html';
-        })();
-
         const loginForm = document.getElementById('loginForm');
         const forgotSection = document.getElementById('forgotPasswordSection');
         const loginError = document.getElementById('loginError');
@@ -154,6 +148,10 @@
                 btn.disabled = false;
                 btn.innerHTML = 'Sign In';
             } else {
+                localStorage.removeItem('vm_user_name');
+                const newName = (data.user && data.user.user_metadata && (data.user.user_metadata.full_name || data.user.user_metadata.name)) ?
+                    (data.user.user_metadata.full_name || data.user.user_metadata.name) : email.split('@')[0];
+                localStorage.setItem('vm_user_name', newName);
                 window.location.href = 'dashboard.html';
             }
         });

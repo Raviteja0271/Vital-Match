@@ -1,16 +1,12 @@
 // ============================================
-// VitalMatch - Supabase Configuration
-// ============================================
-// HOW TO GET YOUR ANON KEY:
-// 1. Go to https://supabase.com/dashboard
-// 2. Open your project (wcoipyffkhhvcpknrqpb)
-// 3. Go to Settings → API → Project API Keys
-// 4. Copy the "anon public" key (starts with "eyJ...")
-// 5. Paste it below replacing the placeholder
+// VitalMatch - Supabase & Location API Configuration
 // ============================================
 
 const SUPABASE_URL = 'https://wcoipyffkhhvcpknrqpb.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_dE6gJYL2yGgxS9lIEKoqHA_FDooPDHg';
+
+// Gemini / Google Location Geocoding API Key
+const LOCATION_API_KEY = 'AIzaSy_GEMINI_LOCATION_GEOCODING_KEY_VITALMATCH';
 
 // Initialize client
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

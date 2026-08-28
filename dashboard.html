@@ -173,44 +173,54 @@
     <script src="js/chatbot.js"></script>
     <script>
     async function pageInit() {
-        // Load stats for current profile (district and user connections)
-        const stats = await DB.getDashboardStats(
-            currentProfile ? currentProfile.district : null,
-            currentProfile ? currentProfile.id : null
-        );
-        document.getElementById('statTotalDonors').textContent = stats.totalDonors.toLocaleString();
-        document.getElementById('statAvailableDonors').textContent = stats.availableDonors.toLocaleString();
-        document.getElementById('statEmergencies').textContent = stats.activeEmergencies.toLocaleString();
-        document.getElementById('statConnections').textContent = stats.successfulConnections.toLocaleString();
-
-        // Load recent emergencies filtered by user district
-        let emergencies = await DB.getEmergencies(20);
-        if (currentProfile && currentProfile.district) {
-            const uDist = currentProfile.district.toLowerCase();
-            emergencies = emergencies.filter(e =>
-                (e.district && e.district.toLowerCase() === uDist) ||
-                (e.location && e.location.toLowerCase().includes(uDist)) ||
-                (e.user_id === currentProfile.id)
+        try {
+            const stats = await DB.getDashboardStats(
+                currentProfile ? currentProfile.district : null,
+                currentProfile ? currentProfile.id : null
             );
+            document.getElementById('statTotalDonors').textContent = (stats.totalDonors || 0).toLocaleString();
+            document.getElementById('statAvailableDonors').textContent = (stats.availableDonors || 0).toLocaleString();
+            document.getElementById('statEmergencies').textContent = (stats.activeEmergencies || 0).toLocaleString();
+            document.getElementById('statConnections').textContent = (stats.successfulConnections || 0).toLocaleString();
+        } catch (e) {
+            document.getElementById('statTotalDonors').textContent = '0';
+            document.getElementById('statAvailableDonors').textContent = '0';
+            document.getElementById('statEmergencies').textContent = '0';
+            document.getElementById('statConnections').textContent = '0';
         }
-        emergencies = emergencies.slice(0, 5);
 
-        const tbody = document.getElementById('recentEmergenciesBody');
-        if (emergencies.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No recent emergencies</td></tr>';
-        } else {
-            tbody.innerHTML = emergencies.map(e => `
-                <tr>
-                    <td><div class="d-flex align-items-center">
-                        <div class="bg-danger bg-opacity-10 text-danger p-2 rounded-3 me-3"><i class="fas fa-user"></i></div>
-                        <span class="fw-semibold">${e.patient_name}</span>
-                    </div></td>
-                    <td><span class="badge bg-danger rounded-pill">${e.blood_group}</span></td>
-                    <td>${e.hospital_name}</td>
-                    <td class="text-muted">${timeAgo(e.created_at)}</td>
-                    <td class="text-end"><a href="emergency-feed.html" class="btn btn-sm btn-indigo px-3">View</a></td>
-                </tr>
-            `).join('');
+        try {
+            let emergencies = await DB.getEmergencies(20);
+            if (currentProfile && currentProfile.district) {
+                const uDist = currentProfile.district.toLowerCase();
+                emergencies = emergencies.filter(e =>
+                    (e.district && e.district.toLowerCase() === uDist) ||
+                    (e.location && e.location.toLowerCase().includes(uDist)) ||
+                    (e.user_id === currentProfile.id)
+                );
+            }
+            emergencies = emergencies.slice(0, 5);
+
+            const tbody = document.getElementById('recentEmergenciesBody');
+            if (!emergencies || emergencies.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No recent emergencies</td></tr>';
+            } else {
+                tbody.innerHTML = emergencies.map(e => `
+                    <tr>
+                        <td><div class="d-flex align-items-center">
+                            <div class="bg-danger bg-opacity-10 text-danger p-2 rounded-3 me-3"><i class="fas fa-user"></i></div>
+                            <span class="fw-semibold">${e.patient_name}</span>
+                        </div></td>
+                        <td><span class="badge bg-danger rounded-pill">${e.blood_group}</span></td>
+                        <td>${e.hospital_name}</td>
+                        <td class="text-muted">${timeAgo(e.created_at)}</td>
+                        <td class="text-end"><a href="emergency-feed.html" class="btn btn-sm btn-indigo px-3">View</a></td>
+                    </tr>
+                `).join('');
+            }
+        } catch (e) {
+            const tbody = document.getElementById('recentEmergenciesBody');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">No recent emergencies</td></tr>';
         }
     }
     </script>

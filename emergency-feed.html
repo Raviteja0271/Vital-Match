@@ -18,6 +18,7 @@
             <a href="emergency-feed.html" class="sidebar-link active"><i class="fas fa-broadcast-tower"></i> <span data-i18n="emergency_feed">Emergency Feed</span></a>
             <a href="search-donors.html" class="sidebar-link"><i class="fas fa-search"></i> <span data-i18n="search_donors">Search Donors</span></a>
             <a href="become-donor.html" class="sidebar-link"><i class="fas fa-hand-holding-medical"></i> <span data-i18n="become_donor">Become Donor</span></a>
+            <a href="my-requests.html" class="sidebar-link"><i class="fas fa-list"></i> <span>My Requests</span></a>
             <a href="notifications.html" class="sidebar-link"><i class="fas fa-bell"></i> <span data-i18n="notifications">Notifications</span></a>
             <a href="reports.html" class="sidebar-link"><i class="fas fa-file-alt"></i> <span data-i18n="reports">Reports</span></a>
             <a href="profile.html" class="sidebar-link"><i class="fas fa-user"></i> <span data-i18n="profile">Profile</span></a>
@@ -30,7 +31,10 @@
     <!-- Main Content -->
     <div class="main-content">
         <div class="d-flex justify-content-between align-items-center mb-5">
-            <h2 class="fw-bold mb-0">Live Emergency Feed</h2>
+            <div>
+                <h2 class="fw-bold mb-0">Live Emergency Feed</h2>
+                <div id="userLocationText" class="text-muted small mt-1"><i class="fas fa-map-marker-alt text-danger me-1"></i> <span class="fw-bold">Detecting location...</span></div>
+            </div>
             <div class="d-flex align-items-center gap-3">
                 <div class="position-relative cursor-pointer" onclick="window.location.href='notifications.html'" title="Notifications">
                     <i class="fas fa-bell fa-lg text-muted cursor-pointer"></i>
@@ -99,8 +103,10 @@
                     ${notes}
                     <div class="d-grid gap-2">
                         ${e.status === 'Completed'
-                            ? '<button class="btn btn-success py-3" disabled><i class="fas fa-check-double me-2"></i>Blood Received & Completed</button>'
-                            : `<button onclick="handleBloodReceived(this, '${e.id}')" class="btn btn-success py-3"><i class="fas fa-hand-holding-medical me-2"></i>Blood Received & Completed</button>`
+                            ? '<button class="btn btn-secondary py-3" disabled><i class="fas fa-check-double me-2"></i>Blood Received & Completed</button>'
+                            : (currentProfile && e.user_id === currentProfile.id)
+                            ? `<button onclick="handleBloodReceived(this, '${e.id}')" class="btn btn-success py-3 fw-bold"><i class="fas fa-hand-holding-medical me-2"></i>Mark Blood Received & Completed</button>`
+                            : `<a href="tel:${e.contact_number}" class="btn btn-indigo py-3 fw-bold"><i class="fas fa-phone-alt me-2"></i>Call / Respond to Emergency (${e.contact_number})</a>`
                         }
                     </div>
                 </div>

@@ -12,12 +12,23 @@
 <body>
     <!-- Sidebar -->
     <div class="sidebar d-none d-lg-block">
-        <div class="mb-5 text-center"><div class="py-3"><svg width="100" height="100" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="250" cy="220" r="190" stroke="#4F46E5" stroke-width="25"/><path d="M250 470C250 470 426 310 426 190C426 100 346 30 256 30C166 30 86 100 86 190C86 310 256 470 256 470Z" fill="#EF4444"/><path d="M256 340C256 340 366 250 366 170C366 110 316 70 256 70C196 70 146 110 146 170C146 250 256 340 256 340Z" fill="white" fill-opacity="0.2"/><path d="M256 270C285 270 306 247 306 215C306 185 256 120 256 120C256 120 206 185 206 215C206 247 227 270 256 270Z" fill="white"/></svg><h4 class="fw-bold mt-2" style="color:#1E293B;"><span style="color:#EF4444;">Vital</span>Match</h4></div></div>
+        <div class="mb-5 text-center">
+            <div class="py-3">
+                <svg width="100" height="100" viewBox="0 0 500 500" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="250" cy="220" r="190" stroke="#4F46E5" stroke-width="25"/>
+                    <path d="M250 470C250 470 426 310 426 190C426 100 346 30 256 30C166 30 86 100 86 190C86 310 256 470 256 470Z" fill="#EF4444"/>
+                    <path d="M256 340C256 340 366 250 366 170C366 110 316 70 256 70C196 70 146 110 146 170C146 250 256 340 256 340Z" fill="white" fill-opacity="0.2"/>
+                    <path d="M256 270C285 270 306 247 306 215C306 185 256 120 256 120C256 120 206 185 206 215C206 247 227 270 256 270Z" fill="white"/>
+                </svg>
+                <h4 class="fw-bold mt-2" style="color:#1E293B;"><span style="color:#EF4444;">Vital</span>Match</h4>
+            </div>
+        </div>
         <div class="nav flex-column">
             <a href="dashboard.html" class="sidebar-link"><i class="fas fa-columns"></i> <span data-i18n="dashboard">Dashboard</span></a>
             <a href="emergency-feed.html" class="sidebar-link"><i class="fas fa-broadcast-tower"></i> <span data-i18n="emergency_feed">Emergency Feed</span></a>
             <a href="search-donors.html" class="sidebar-link"><i class="fas fa-search"></i> <span data-i18n="search_donors">Search Donors</span></a>
             <a href="become-donor.html" class="sidebar-link"><i class="fas fa-hand-holding-medical"></i> <span data-i18n="become_donor">Become Donor</span></a>
+            <a href="my-requests.html" class="sidebar-link"><i class="fas fa-list"></i> <span>My Requests</span></a>
             <a href="notifications.html" class="sidebar-link active"><i class="fas fa-bell"></i> <span data-i18n="notifications">Notifications</span></a>
             <a href="reports.html" class="sidebar-link"><i class="fas fa-file-alt"></i> <span data-i18n="reports">Reports</span></a>
             <a href="profile.html" class="sidebar-link"><i class="fas fa-user"></i> <span data-i18n="profile">Profile</span></a>
@@ -27,26 +38,53 @@
         </div>
     </div>
 
+    <!-- Main Content -->
     <div class="main-content">
+        <!-- Top Nav -->
         <div class="d-flex justify-content-between align-items-center mb-5">
-            <h2 class="fw-bold mb-0">Notifications</h2>
-            <div class="d-flex align-items-center gap-3">
+            <div class="d-flex align-items-center">
+                <button class="btn btn-mobile-sidebar d-lg-none me-3"><i class="fas fa-bars"></i></button>
+                <div>
+                    <h5 class="fw-bold mb-0" data-i18n="current_location">Current Location</h5>
+                    <p class="text-muted small mb-0" id="userLocationText"><i class="fas fa-map-marker-alt text-primary me-1"></i> Loading location...</p>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-4">
+                <div class="input-group d-none d-md-flex" style="width:300px;">
+                    <span class="input-group-text bg-white border-0 shadow-sm"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" class="form-control border-0 shadow-sm" placeholder="Search anything...">
+                </div>
                 <div class="position-relative cursor-pointer" onclick="window.location.href='notifications.html'" title="Notifications">
                     <i class="fas fa-bell fa-lg text-muted cursor-pointer"></i>
                     <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
                 </div>
                 <div class="d-flex align-items-center gap-2 cursor-pointer" onclick="window.location.href='profile.html'" title="View Profile">
                     <img src="https://ui-avatars.com/api/?name=User&background=E53935&color=fff" class="rounded-circle user-avatar-display" width="40" height="40">
-                    <div class="d-none d-sm-block"><p class="fw-bold mb-0 small user-name-display text-capitalize">User Name</p></div>
+                    <div class="d-none d-sm-block">
+                        <p class="fw-bold mb-0 small user-name-display text-capitalize">User Name</p>
+                        <p class="text-muted mb-0 smaller" data-i18n="become_donor">Blood Donor</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="vm-card">
+        <!-- Page Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h3 class="fw-bold mb-1" data-i18n="notifications">Notifications & Emergency Alerts</h3>
+                <p class="text-muted mb-0">Stay updated with urgent blood requests and community notifications</p>
+            </div>
+        </div>
+
+        <!-- Notifications Card Container -->
+        <div class="row">
+            <div class="col-12">
+                <div class="vm-card p-4 rounded-4 shadow-sm border-0">
                     <div id="notificationsList" class="list-group list-group-flush">
-                        <div class="text-center py-5"><span class="spinner-border text-primary"></span><p class="mt-2 text-muted">Loading notifications...</p></div>
+                        <div class="text-center py-5">
+                            <span class="spinner-border text-danger"></span>
+                            <p class="mt-2 text-muted">Loading notifications...</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -60,12 +98,23 @@
     <script src="js/main.js"></script>
     <script src="js/chatbot.js"></script>
     <script>
+    let notificationsList = [];
+
     async function pageInit() {
         if (!currentProfile) return;
-        const notifications = await DB.getNotifications(currentProfile.id);
+
+        let clearedNotifIds = [];
+        try {
+            const stored = localStorage.getItem(`vm_cleared_notifs_${currentProfile.id}`);
+            if (stored) clearedNotifIds = JSON.parse(stored);
+        } catch (e) {}
+
+        const rawNotifs = await DB.getNotifications(currentProfile.id);
+        notificationsList = (rawNotifs || []).filter(n => !clearedNotifIds.includes(n.id));
+
         const container = document.getElementById('notificationsList');
 
-        if (notifications.length === 0) {
+        if (!notificationsList || notificationsList.length === 0) {
             container.innerHTML = '<div class="text-center py-5"><i class="fas fa-bell-slash fa-3x text-muted mb-3"></i><h5 class="text-muted">No notifications yet</h5><p class="text-muted">You\'ll see emergency alerts and updates here.</p></div>';
             return;
         }
@@ -85,7 +134,7 @@
             info: 'bg-info' 
         };
 
-        container.innerHTML = notifications.map(n => {
+        container.innerHTML = notificationsList.map(n => {
             const iconClass = iconMap[n.type] || iconMap.info;
             const bgClass = bgMap[n.type] || bgMap.info;
             const isRequestNotif = n.type === 'URGENT' || (n.title && (n.title.toLowerCase().includes('request') || n.title.toLowerCase().includes('emergency')));
@@ -120,6 +169,36 @@
         }).join('');
     }
 
+    function markClearedLocally(notifId) {
+        if (!currentProfile) return;
+        try {
+            const key = `vm_cleared_notifs_${currentProfile.id}`;
+            let stored = [];
+            const raw = localStorage.getItem(key);
+            if (raw) stored = JSON.parse(raw);
+            if (!stored.includes(notifId)) stored.push(notifId);
+            localStorage.setItem(key, JSON.stringify(stored));
+        } catch (e) {}
+    }
+
+    function saveLocalRequest(req) {
+        if (!currentProfile) return;
+        try {
+            const key = `vm_local_requests_${currentProfile.id}`;
+            let stored = [];
+            const raw = localStorage.getItem(key);
+            if (raw) stored = JSON.parse(raw);
+            
+            const existingIdx = stored.findIndex(r => r.id === req.id || r.requester_name === req.requester_name);
+            if (existingIdx >= 0) {
+                stored[existingIdx] = req;
+            } else {
+                stored.unshift(req);
+            }
+            localStorage.setItem(key, JSON.stringify(stored));
+        } catch (e) {}
+    }
+
     async function markRead(btn, notifId) {
         await DB.markNotificationRead(notifId);
         btn.closest('.list-group-item').classList.add('opacity-50');
@@ -127,54 +206,127 @@
     }
 
     async function acceptRequestAction(btn, notifId) {
+        if (!currentProfile) return;
+
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Accepting...';
+
+        // SINGLE ACCEPTED REQUEST LOCK: Donor can only accept 1 request at a time
+        const hasActive = await DB.hasActiveAcceptedRequest(currentProfile.id);
+        if (hasActive) {
+            alert("You already have an active accepted request! You can only accept one request at a time until the donation is completed or cancelled.");
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-check me-1"></i>Accept Request';
+            return;
+        }
         
         try {
+            const notifObj = (notificationsList || []).find(n => n.id === notifId);
+            const title = notifObj ? notifObj.title : 'Emergency Patient';
+            const msg = notifObj ? notifObj.message : '';
+            const phoneMatch = msg.match(/\d{10}/);
+            const phone = phoneMatch ? phoneMatch[0] : '8885008245';
+
+            const localReq = {
+                id: 'req_' + Date.now(),
+                donor_user_id: currentProfile.id,
+                requester_name: title,
+                requester_phone: phone,
+                status: 'Accepted',
+                created_at: new Date().toISOString()
+            };
+
+            saveLocalRequest(localReq);
+
             if (currentProfile && currentProfile.id) {
-                // Update blood_requests for this donor to Accepted
-                await supabaseClient
+                const { data: updated } = await supabaseClient
                     .from('blood_requests')
                     .update({ status: 'Accepted' })
                     .eq('donor_user_id', currentProfile.id)
-                    .eq('status', 'Pending');
+                    .eq('status', 'Pending')
+                    .select();
+
+                if (!updated || updated.length === 0) {
+                    await supabaseClient
+                        .from('blood_requests')
+                        .insert({
+                            donor_user_id: currentProfile.id,
+                            requester_name: title,
+                            requester_phone: phone,
+                            status: 'Accepted'
+                        });
+                }
             }
-            await DB.markNotificationRead(notifId);
+
+            markClearedLocally(notifId);
+            await supabaseClient.from('notifications').delete().eq('id', notifId);
             
-            const btnContainer = document.getElementById(`action-btns-${notifId}`);
-            if (btnContainer) {
-                btnContainer.innerHTML = '<span class="badge bg-success px-3 py-2 rounded-pill"><i class="fas fa-check-circle me-1"></i>Request Accepted</span>';
-            }
+            const cardItem = btn.closest('.list-group-item');
+            if (cardItem) cardItem.remove();
+            
             if (typeof showToast === 'function') {
-                showToast('Blood Request Accepted successfully! Requester notified.', 'success');
+                showToast('Request Accepted! Moved to Accepted Requests in My Requests page.', 'success');
             }
         } catch (e) {
             console.error(e);
-            const btnContainer = document.getElementById(`action-btns-${notifId}`);
-            if (btnContainer) {
-                btnContainer.innerHTML = '<span class="badge bg-success px-3 py-2 rounded-pill"><i class="fas fa-check-circle me-1"></i>Request Accepted</span>';
-            }
+            markClearedLocally(notifId);
+            await supabaseClient.from('notifications').delete().eq('id', notifId);
+            const cardItem = btn.closest('.list-group-item');
+            if (cardItem) cardItem.remove();
         }
     }
 
     async function declineRequestAction(btn, notifId) {
         btn.disabled = true;
         try {
+            const notifObj = (notificationsList || []).find(n => n.id === notifId);
+            const title = notifObj ? notifObj.title : 'Emergency Patient';
+            const msg = notifObj ? notifObj.message : '';
+            const phoneMatch = msg.match(/\d{10}/);
+            const phone = phoneMatch ? phoneMatch[0] : '8885008245';
+
+            const localReq = {
+                id: 'req_' + Date.now(),
+                donor_user_id: currentProfile.id,
+                requester_name: title,
+                requester_phone: phone,
+                status: 'Declined',
+                created_at: new Date().toISOString()
+            };
+
+            saveLocalRequest(localReq);
+
             if (currentProfile && currentProfile.id) {
-                await supabaseClient
+                const { data: updated } = await supabaseClient
                     .from('blood_requests')
                     .update({ status: 'Declined' })
                     .eq('donor_user_id', currentProfile.id)
-                    .eq('status', 'Pending');
-            }
-            await DB.markNotificationRead(notifId);
+                    .eq('status', 'Pending')
+                    .select();
 
-            const btnContainer = document.getElementById(`action-btns-${notifId}`);
-            if (btnContainer) {
-                btnContainer.innerHTML = '<span class="badge bg-secondary px-3 py-2 rounded-pill">Declined</span>';
+                if (!updated || updated.length === 0) {
+                    await supabaseClient
+                        .from('blood_requests')
+                        .insert({
+                            donor_user_id: currentProfile.id,
+                            requester_name: title,
+                            requester_phone: phone,
+                            status: 'Declined'
+                        });
+                }
             }
+
+            markClearedLocally(notifId);
+            await supabaseClient.from('notifications').delete().eq('id', notifId);
+
+            const cardItem = btn.closest('.list-group-item');
+            if (cardItem) cardItem.remove();
         } catch (e) {
             console.error(e);
+            markClearedLocally(notifId);
+            await supabaseClient.from('notifications').delete().eq('id', notifId);
+            const cardItem = btn.closest('.list-group-item');
+            if (cardItem) cardItem.remove();
         }
     }
     </script>

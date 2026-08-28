@@ -80,12 +80,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script>
-        // Redirect if already logged in
-        (async () => {
-            const session = await supabaseGetSession();
-            if (session) window.location.href = 'dashboard.html';
-        })();
-
         document.getElementById('regForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             const name = document.getElementById('fullName').value.trim();
@@ -118,7 +112,7 @@
                 btn.disabled = false;
                 btn.innerHTML = 'Create Account';
             } else {
-                // Sign out immediately so they are forced to log in manually
+                localStorage.removeItem('vm_user_name');
                 await supabaseClient.auth.signOut();
                 localStorage.setItem('vm_reg_name', name);
                 window.location.href = 'success.html?type=register';

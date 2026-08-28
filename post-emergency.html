@@ -17,8 +17,9 @@
             <a href="dashboard.html" class="sidebar-link"><i class="fas fa-columns"></i> Dashboard</a>
             <a href="emergency-feed.html" class="sidebar-link"><i class="fas fa-broadcast-tower"></i> Emergency Feed</a>
             <a href="search-donors.html" class="sidebar-link"><i class="fas fa-search"></i> Search Donors</a>
-            <a href="become-donor.html" class="sidebar-link"><i class="fas fa-hand-holding-medical"></i> Become Donor</a>
-            <a href="notifications.html" class="sidebar-link"><i class="fas fa-bell"></i> Notifications</a>
+            <a href="become-donor.html" class="sidebar-link"><i class="fas fa-hand-holding-medical"></i> <span data-i18n="become_donor">Become Donor</span></a>
+            <a href="my-requests.html" class="sidebar-link"><i class="fas fa-list"></i> <span>My Requests</span></a>
+            <a href="notifications.html" class="sidebar-link"><i class="fas fa-bell"></i> <span data-i18n="notifications">Notifications</span></a>
             <a href="reports.html" class="sidebar-link"><i class="fas fa-file-alt"></i> Reports</a>
             <a href="profile.html" class="sidebar-link"><i class="fas fa-user"></i> Profile</a>
             <a href="settings.html" class="sidebar-link"><i class="fas fa-cog"></i> Settings</a>
@@ -97,7 +98,17 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small fw-bold">Landmark / Hospital Area</label>
-                                <input type="text" id="emLandmark" class="form-control bg-light border-0 py-3 rounded-3" placeholder="e.g. Near Main Gate, Block B">
+                                <input type="text" id="emLandmark" class="form-control bg-light border-0 py-3 rounded-3" placeholder="e.g. Near Bus Stand, Main Road">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-danger"><i class="fas fa-crosshairs me-1"></i>Notification Radius <span class="text-danger">*</span></label>
+                                <select id="emRadius" class="form-select bg-light border-0 py-3 rounded-3" required>
+                                    <option value="5" selected>5 km Radius (Nearby Donors)</option>
+                                    <option value="10">10 km Radius</option>
+                                    <option value="15">15 km Radius</option>
+                                    <option value="25">25 km Radius</option>
+                                    <option value="50">50 km Radius</option>
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label small fw-bold">Priority Level</label>
@@ -183,9 +194,13 @@
                 blood_group: document.getElementById('emBloodGroup').value,
                 hospital_name: document.getElementById('emHospital').value.trim(),
                 contact_number: document.getElementById('emContact').value.trim(),
-                location: fullLoc || 'Not specified',
-                priority: document.getElementById('emPriority').value,
+                state: stateVal,
+                district: districtVal,
+                city: cityVal,
+                location: fullLoc,
+                radius_km: parseFloat(document.getElementById('emRadius').value || 5),
                 notes: document.getElementById('emNotes').value.trim(),
+                priority: document.getElementById('emPriority').value,
                 status: 'Active'
             };
 
