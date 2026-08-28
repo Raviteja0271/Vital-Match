@@ -273,8 +273,12 @@ fun PostEmergencyScreen(navController: NavController) {
                             val daysSince = calculateDaysSince(d.last_donation_date ?: "")
                             val isNotHospitalized = d.hospitalization_status != "Yes"
                             if (!dId.isNullOrBlank() && dId != currentUser?.id && daysSince >= 90 && isNotHospitalized) {
-                                val donorCityName = d.city ?: d.district ?: ""
-                                val donorCoords = com.simats.vitalmatch.data.LocationData.resolveCityCoordinates(donorCityName)
+                                val donorCoords = if (d.latitude != null && d.longitude != null) {
+                                    Pair(d.latitude, d.longitude)
+                                } else {
+                                    val donorCityName = d.city ?: d.district ?: ""
+                                    com.simats.vitalmatch.data.LocationData.resolveCityCoordinates(donorCityName)
+                                }
 
                                 if (emCoords != null && donorCoords != null) {
                                     val dist = com.simats.vitalmatch.data.LocationData.calculateDistanceKm(
