@@ -285,7 +285,17 @@ fun SearchResultsScreen(navController: NavController, bloodGroup: String, countr
                     }
                 }.decodeList<Donor>()
             
+            val searchCityCoords = LocationData.resolveCityCoordinates(city.ifEmpty { district })
+
             donorsList = fetchedDonors
+                .filter { it.hospitalization_status != "Yes" }
+                .sortedWith(Comparator { d1, d2 ->
+                    val c1 = LocationData.resolveCityCoordinates(d1.city ?: d1.district ?: "")
+                    val c2 = LocationData.resolveCityCoordinates(d2.city ?: d2.district ?: "")
+                    val dist1 = if (searchCityCoords != null && c1 != null) LocationData.calculateDistanceKm(searchCityCoords.first, searchCityCoords.second, c1.first, c1.second) else 999.0
+                    val dist2 = if (searchCityCoords != null && c2 != null) LocationData.calculateDistanceKm(searchCityCoords.first, searchCityCoords.second, c2.first, c2.second) else 999.0
+                    dist1.compareTo(dist2)
+                })
         } catch (e: Exception) {
             Toast.makeText(context, "Error fetching donors: ${e.message}", Toast.LENGTH_SHORT).show()
         } finally {
@@ -435,12 +445,38 @@ fun DonorCard(donor: Donor, onRequestClick: () -> Unit = {}) {
                 Spacer(modifier = Modifier.width(16.dp))
                 
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = donor.full_name,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = donor.full_name,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        val donorCoords = com.simats.vitalmatch.data.LocationData.resolveCityCoordinates(donor.city ?: donor.district)
+                        if (donorCoords != null) {
+                            val userCoords = com.simats.vitalmatch.data.LocationData.resolveCityCoordinates("Ongole")
+                            if (userCoords != null) {
+                                val km = com.simats.vitalmatch.data.LocationData.calculateDistanceKm(
+                                    userCoords.first, userCoords.second,
+                                    donorCoords.first, donorCoords.second
+                                )
+                                val formattedKm = String.format(java.util.Locale.US, "%.1f", km)
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Surface(
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    shape = RoundedCornerShape(6.dp)
+                                ) {
+                                    Text(
+                                        text = "${formattedKm}km",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
                     Text(
                         text = donor.blood_group,
                         fontSize = 18.sp,

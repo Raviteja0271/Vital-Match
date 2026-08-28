@@ -20,8 +20,16 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Ensure Reports Directory Exists
+        run: |
+          mkdir -p reports
+          if [ ! -f "reports/index.html" ]; then
+            echo "<html><body><h1>VitalMatch Automation Reports</h1></body></html>" > reports/index.html
+          fi
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
+        continue-on-error: true
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./reports

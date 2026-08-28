@@ -57,6 +57,7 @@ fun DonorRegistrationScreen(navController: NavController) {
     var bloodGroup by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
     var lastDonationDate by remember { mutableStateOf("") }
+    var hospitalizationStatus by remember { mutableStateOf("No") }
     
     var country by remember { mutableStateOf("") }
     var state by remember { mutableStateOf("") }
@@ -290,26 +291,50 @@ fun DonorRegistrationScreen(navController: NavController) {
                             if (parts.size == 3) "${parts[2]}-${parts[1]}-${parts[0]}" else lastDonationDate
                         } else null
 
-                        SupabaseClient.client.postgrest["profiles"]
-                            .update(
-                                buildJsonObject {
-                                    put("full_name", fullName)
-                                    put("blood_group", bloodGroup)
-                                    put("mobile", phoneNumber)
-                                    if (formattedDate != null) {
-                                        put("last_donation_date", formattedDate)
+                        try {
+                            SupabaseClient.client.postgrest["profiles"]
+                                .update(
+                                    buildJsonObject {
+                                        put("full_name", fullName)
+                                        put("blood_group", bloodGroup)
+                                        put("mobile", phoneNumber)
+                                        if (formattedDate != null) {
+                                            put("last_donation_date", formattedDate)
+                                        }
+                                        put("hospitalization_status", hospitalizationStatus)
+                                        put("is_available", isAvailable)
+                                        put("is_donor", true)
+                                        put("state", state)
+                                        put("district", district)
+                                        put("city", city)
                                     }
-                                    put("is_available", isAvailable)
-                                    put("is_donor", true)
-                                    put("state", state)
-                                    put("district", district)
-                                    put("city", city)
+                                ) {
+                                    filter {
+                                        eq("id", currentUser?.id ?: "")
+                                    }
                                 }
-                            ) {
-                                filter {
-                                    eq("id", currentUser?.id ?: "")
+                        } catch (primaryErr: Exception) {
+                            SupabaseClient.client.postgrest["profiles"]
+                                .update(
+                                    buildJsonObject {
+                                        put("full_name", fullName)
+                                        put("blood_group", bloodGroup)
+                                        put("mobile", phoneNumber)
+                                        if (formattedDate != null) {
+                                            put("last_donation_date", formattedDate)
+                                        }
+                                        put("is_available", isAvailable)
+                                        put("is_donor", true)
+                                        put("state", state)
+                                        put("district", district)
+                                        put("city", city)
+                                    }
+                                ) {
+                                    filter {
+                                        eq("id", currentUser?.id ?: "")
+                                    }
                                 }
-                            }
+                        }
 
                         val sharedPreferences =
                             context.getSharedPreferences("vitalmatch", Context.MODE_PRIVATE)
@@ -383,6 +408,14 @@ fun DonorDashboardScreen(navController: NavController) {
                     if (profile.blood_group.isNotBlank()) {
                         userBloodGroup = profile.blood_group
                     }
+                }
+                // Automatically turn ON availability button when days >= 90 and not hospitalized
+                val currentDays = calculateDaysSince(lastDonationDate)
+                val isHospitalized = profile?.hospitalization_status == "Yes"
+                if (currentDays >= 90 && !isHospitalized) {
+                    isAvailableInternal = true
+                } else {
+                    isAvailableInternal = false
                 }
                 pastDonations = com.simats.vitalmatch.data.remote.SupabaseClient.client.postgrest["notifications"]
                     .select {
@@ -482,17 +515,27 @@ fun DonorDashboardScreen(navController: NavController) {
                 }
 
                 // Days Since Last Donation Card
+                val daysRemaining = if (lastDonationDate.isBlank()) 0L else maxOf(0L, 90L - daysSinceLastDonation)
+                val daysTextDisplay = if (lastDonationDate.isBlank()) "Eligible" else if (isEligible) "${daysSinceLastDonation}d" else "${daysRemaining}d"
+
                 DashboardCard(borderColor = statusColor.copy(alpha = 0.5f)) {
                     Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(AppStrings.get("last_donation_date"), fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(text = daysSinceLastDonation.toString(), fontSize = 56.sp, fontWeight = FontWeight.ExtraBold, color = statusColor)
+                        Text(text = daysTextDisplay, fontSize = 48.sp, fontWeight = FontWeight.ExtraBold, color = statusColor)
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(if (isEligible) Icons.Default.Check else Icons.Default.Close, contentDescription = null, tint = statusColor, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text(if (isEligible) "Eligible to donate" else "Not eligible", color = statusColor, fontWeight = FontWeight.Medium)
+                            Text(if (isEligible) "Eligible to donate" else "Eligible in $daysRemaining day(s)", color = statusColor, fontWeight = FontWeight.Medium)
                         }
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(if (isEligible) "You have waited the required 3 months (90 days)" else "You need to wait 90 days between donations", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center)
+                        Text(
+                            text = if (lastDonationDate.isBlank()) "You can donate blood today and save lives!" 
+                                   else if (isEligible) "You have completed the required 90 days" 
+                                   else "You need to wait $daysRemaining more days before donating", 
+                            fontSize = 12.sp, 
+                            color = MaterialTheme.colorScheme.onSurfaceVariant, 
+                            textAlign = TextAlign.Center
+                        )
                     }
                 }
 
@@ -509,7 +552,7 @@ fun DonorDashboardScreen(navController: NavController) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Default.CalendarToday, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text("Last donation: $lastDonationDate", color = MaterialTheme.colorScheme.onSurface)
+                            Text("Last donation: ${if (lastDonationDate.isBlank()) "Never donated" else lastDonationDate}", color = MaterialTheme.colorScheme.onSurface)
                         }
                         Spacer(modifier = Modifier.height(24.dp))
                         OutlinedButton(
@@ -609,7 +652,7 @@ fun UpdateDonationDateDialog(currentDate: String, onDismiss: () -> Unit, onUpdat
     val datePickerDialog = DatePickerDialog(
         context,
         { _, year, month, dayOfMonth ->
-            dateText = String.format("%02d-%02d-%04d", dayOfMonth, month + 1, year)
+            dateText = String.format(java.util.Locale.US, "%04d-%02d-%02d", year, month + 1, dayOfMonth)
         },
         calendar.get(Calendar.YEAR),
         calendar.get(Calendar.MONTH),
@@ -660,15 +703,17 @@ fun UpdateDonationDateDialog(currentDate: String, onDismiss: () -> Unit, onUpdat
 }
 
 fun calculateDaysSince(dateString: String): Long {
+    if (dateString.isBlank()) return 999L
     return try {
-        val sdf = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-        val donationDate = sdf.parse(dateString)
+        val sdfIso = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val sdfIndian = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+        val donationDate = try { sdfIso.parse(dateString) } catch (e: Exception) { sdfIndian.parse(dateString) }
         val today = Calendar.getInstance().time
         if (donationDate != null) {
             val diff = today.time - donationDate.time
             TimeUnit.DAYS.convert(diff, TimeUnit.MILLISECONDS)
-        } else 0L
-    } catch (_: Exception) { 0L }
+        } else 999L
+    } catch (_: Exception) { 999L }
 }
 
 @Composable

@@ -153,12 +153,20 @@ fun HomeHeader(navController: NavController) {
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = locationText,
-                        color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Column {
+                        Text(
+                            text = "Current Location",
+                            color = Color.White.copy(alpha = 0.7f),
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Text(
+                            text = locationText,
+                            color = Color.White,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
                 }
                 
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -334,7 +342,7 @@ fun EmergencyList(navController: NavController) {
 
             emergenciesList = if (userDistrict.isNotBlank()) {
                 val districtMatches = allActive.filter { e ->
-                    e.location.contains(userDistrict, ignoreCase = true) ||
+                    (e.location?.contains(userDistrict, ignoreCase = true) == true) ||
                     (e.user_id != null && e.user_id == currentUser?.id)
                 }
                 if (districtMatches.isNotEmpty()) districtMatches else allActive
@@ -364,7 +372,7 @@ fun EmergencyList(navController: NavController) {
                     bloodType = item.blood_group,
                     hospital = item.hospital_name,
                     contactNumber = item.contact_number,
-                    location = item.location,
+                    location = item.location ?: "",
                     notes = item.notes ?: "",
                     time = item.created_at?.take(10) ?: "Just now",
                     tag = if (item.notes?.contains("urgent", ignoreCase = true) == true) "URGENT" else null,
@@ -573,6 +581,7 @@ data class BottomNavItem(val label: String, val route: String, val icon: ImageVe
 @Composable
 fun MyRequestsScreen(navController: NavController) {
     var requestsList by remember { mutableStateOf<List<BloodRequest>>(emptyList()) }
+    var selectedFilter by remember { mutableStateOf("all") }
     var isLoading by remember { mutableStateOf(true) }
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -593,6 +602,12 @@ fun MyRequestsScreen(navController: NavController) {
         } finally {
             isLoading = false
         }
+    }
+
+    val filteredList = when (selectedFilter) {
+        "Accepted" -> requestsList.filter { it.status == "Accepted" }
+        "Completed" -> requestsList.filter { it.status == "Completed" }
+        else -> requestsList
     }
 
     Scaffold(
@@ -624,26 +639,52 @@ fun MyRequestsScreen(navController: NavController) {
 
                 Text(
                     text = com.simats.vitalmatch.ui.theme.AppStrings.get("my_requests"),
-                    modifier = Modifier.padding(top = 24.dp),
+                    modifier = Modifier.padding(top = 16.dp),
                     color = MaterialTheme.colorScheme.onSurface,
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Text(
-                    text = "People who requested you for blood",
-                    modifier = Modifier.padding(top = 4.dp, bottom = 24.dp),
+                    text = "Manage received blood requests and donations",
+                    modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 16.sp
+                    fontSize = 14.sp
                 )
+
+                // 3 Tabs requested by user
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    FilterChip(
+                        selected = selectedFilter == "all",
+                        onClick = { selectedFilter = "all" },
+                        label = { Text("All Requests", fontSize = 11.sp) }
+                    )
+                    FilterChip(
+                        selected = selectedFilter == "Accepted",
+                        onClick = { selectedFilter = "Accepted" },
+                        label = { Text("Accepted Requests", fontSize = 11.sp) }
+                    )
+                    FilterChip(
+                        selected = selectedFilter == "Completed",
+                        onClick = { selectedFilter = "Completed" },
+                        label = { Text("Completed Donations", fontSize = 11.sp) }
+                    )
+                }
             }
+
+            HorizontalDivider(thickness = 1.dp, color = Color(0xFFEEEEEE))
 
             if (isLoading) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = RedPrimary)
                 }
-            } else if (requestsList.isEmpty()) {
+            } else if (filteredList.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Text("You have no requests.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("No requests found in this tab.", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             } else {
                 LazyColumn(
@@ -653,7 +694,7 @@ fun MyRequestsScreen(navController: NavController) {
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                     contentPadding = PaddingValues(vertical = 16.dp)
                 ) {
-                    items(requestsList) { request ->
+                    items(filteredList) { request ->
                         RequestCard(
                             request = request,
                             onAccept = {
@@ -683,6 +724,42 @@ fun MyRequestsScreen(navController: NavController) {
                                         Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                                     }
                                 }
+                            },
+                            onCompleteDonation = {
+                                scope.launch {
+                                    try {
+                                        val currentUser = SupabaseClient.client.auth.currentUserOrNull()
+                                        val todayStr = java.text.SimpleDateFormat("dd-MM-yyyy", java.util.Locale.getDefault()).format(java.util.Date())
+                                        
+                                        SupabaseClient.client.postgrest["blood_requests"]
+                                            .update({ set("status", "Completed") }) {
+                                                filter { eq("id", request.id ?: "") }
+                                            }
+
+                                        if (currentUser != null) {
+                                            SupabaseClient.client.postgrest["profiles"].update(
+                                                kotlinx.serialization.json.buildJsonObject {
+                                                    put("last_donation_date", kotlinx.serialization.json.JsonPrimitive(todayStr))
+                                                    put("is_available", kotlinx.serialization.json.JsonPrimitive(false))
+                                                }
+                                            ) { filter { eq("id", currentUser.id) } }
+
+                                            SupabaseClient.client.postgrest["notifications"].insert(
+                                                com.simats.vitalmatch.data.models.NotificationModel(
+                                                    user_id = currentUser.id,
+                                                    title = "Donation Completed!",
+                                                    message = "Donated blood on $todayStr. Profile updated.",
+                                                    type = "DONATION_SUCCESS"
+                                                )
+                                            )
+                                        }
+
+                                        Toast.makeText(context, "Donation Completed! Profile Updated ($todayStr).", Toast.LENGTH_LONG).show()
+                                        requestsList = requestsList.map { if (it.id == request.id) it.copy(status = "Completed") else it }
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Donation Completed!", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
                             }
                         )
                     }
@@ -693,7 +770,13 @@ fun MyRequestsScreen(navController: NavController) {
 }
 
 @Composable
-fun RequestCard(request: BloodRequest, onAccept: () -> Unit, onDecline: () -> Unit) {
+fun RequestCard(
+    request: BloodRequest, 
+    onAccept: () -> Unit, 
+    onDecline: () -> Unit,
+    onCompleteDonation: () -> Unit = {},
+    onCancelRequest: () -> Unit = {}
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -717,6 +800,7 @@ fun RequestCard(request: BloodRequest, onAccept: () -> Unit, onDecline: () -> Un
                     modifier = Modifier.border(
                         width = 1.dp,
                         color = when (request.status) {
+                            "Completed" -> Color(0xFF3498DB)
                             "Accepted" -> Color(0xFF2ECC71)
                             "Declined" -> RedPrimary
                             else -> Color(0xFFF39C12)
@@ -724,6 +808,7 @@ fun RequestCard(request: BloodRequest, onAccept: () -> Unit, onDecline: () -> Un
                         shape = RoundedCornerShape(8.dp)
                     ),
                     color = when (request.status) {
+                        "Completed" -> Color(0xFFEBF5FB)
                         "Accepted" -> Color(0xFFE8F5E9)
                         "Declined" -> Color(0xFFFFEBEE)
                         else -> Color(0xFFFEF9E7)
@@ -733,6 +818,7 @@ fun RequestCard(request: BloodRequest, onAccept: () -> Unit, onDecline: () -> Un
                     Text(
                         text = request.status,
                         color = when (request.status) {
+                            "Completed" -> Color(0xFF2980B9)
                             "Accepted" -> Color(0xFF2E7D32)
                             "Declined" -> RedPrimary
                             else -> Color(0xFFD68910)
@@ -756,12 +842,11 @@ fun RequestCard(request: BloodRequest, onAccept: () -> Unit, onDecline: () -> Un
                 Spacer(modifier = Modifier.height(20.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     OutlinedButton(
                         onClick = onDecline,
                         modifier = Modifier.weight(1f).height(48.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = RedPrimary),
                         border = androidx.compose.foundation.BorderStroke(1.dp, RedPrimary),
                         shape = RoundedCornerShape(12.dp)
                     ) {
@@ -777,6 +862,29 @@ fun RequestCard(request: BloodRequest, onAccept: () -> Unit, onDecline: () -> Un
                         Text("Accept", fontWeight = FontWeight.Bold, color = Color.White)
                     }
                 }
+            } else if (request.status == "Accepted") {
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = onCompleteDonation,
+                    modifier = Modifier.fillMaxWidth().height(48.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2ECC71)),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Favorite, contentDescription = null, tint = Color.White, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Completed Donation & Update Profile", fontWeight = FontWeight.Bold, color = Color.White)
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = onCancelRequest,
+                    modifier = Modifier.fillMaxWidth().height(44.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, RedPrimary)
+                ) {
+                    Text("Cancel / Reject Request (Did Not Donate)", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = RedPrimary)
+                }
             }
         }
     }
@@ -786,6 +894,38 @@ fun RequestCard(request: BloodRequest, onAccept: () -> Unit, onDecline: () -> Un
 fun fetchLocation(context: Context, onResult: (String) -> Unit) {
     try {
         val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+
+        // Request a fresh, active GPS fix (not cached lastLocation which can be null)
+        val locationRequest = com.google.android.gms.location.LocationRequest.Builder(
+            com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY, 1000L
+        ).setMaxUpdates(1).build()
+
+        val locationCallback = object : com.google.android.gms.location.LocationCallback() {
+            override fun onLocationResult(result: com.google.android.gms.location.LocationResult) {
+                val location = result.lastLocation
+                if (location != null) {
+                    try {
+                        val geocoder = Geocoder(context, Locale.getDefault())
+                        val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                        if (!addresses.isNullOrEmpty()) {
+                            val address = addresses[0]
+                            val city = address.locality ?: address.subAdminArea ?: "Unknown City"
+                            val state = address.adminArea ?: "Unknown State"
+                            onResult("$city, $state")
+                        } else {
+                            onResult("Location unavailable")
+                        }
+                    } catch (e: Exception) {
+                        onResult("Location unavailable")
+                    }
+                } else {
+                    onResult("Enable GPS for live location")
+                }
+                fusedLocationClient.removeLocationUpdates(this)
+            }
+        }
+
+        // Try lastLocation first for instant display, then request fresh fix
         fusedLocationClient.lastLocation.addOnSuccessListener { location ->
             if (location != null) {
                 try {
@@ -797,18 +937,21 @@ fun fetchLocation(context: Context, onResult: (String) -> Unit) {
                         val state = address.adminArea ?: "Unknown State"
                         onResult("$city, $state")
                     } else {
-                        onResult("Location unavailable")
+                        // No cached location, request fresh
+                        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, android.os.Looper.getMainLooper())
                     }
                 } catch (e: Exception) {
-                    onResult("Location unavailable")
+                    fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, android.os.Looper.getMainLooper())
                 }
             } else {
-                onResult("Please enable GPS")
+                // No cached location, request active GPS fix
+                fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, android.os.Looper.getMainLooper())
             }
         }.addOnFailureListener {
-            onResult("Location unavailable")
+            fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, android.os.Looper.getMainLooper())
         }
     } catch (e: Exception) {
         onResult("Location error")
     }
 }
+

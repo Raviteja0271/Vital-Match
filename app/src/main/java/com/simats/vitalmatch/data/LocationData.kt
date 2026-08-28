@@ -465,4 +465,46 @@ object LocationData {
         "Puducherry" to listOf("Puducherry", "Ozhukarai", "Villianur", "Bahour"),
         "Yanam" to listOf("Yanam")
     )
+
+    val cityCoordinates = mapOf(
+        "ongole" to Pair(15.5057, 80.0499),
+        "chirala" to Pair(15.8246, 80.3531),
+        "bapatla" to Pair(15.9042, 80.4674),
+        "guntur" to Pair(16.3067, 80.4365),
+        "vijayawada" to Pair(16.5062, 80.6480),
+        "nellore" to Pair(14.4426, 79.9865),
+        "tirupati" to Pair(13.6288, 79.4192),
+        "hyderabad" to Pair(17.3850, 78.4867),
+        "visakhapatnam" to Pair(17.6868, 83.2185),
+        "chennai" to Pair(13.0827, 80.2707),
+        "bengaluru" to Pair(12.9716, 77.5946),
+        "kurnool" to Pair(15.8281, 78.0373),
+        "anantapur" to Pair(14.6819, 77.6006),
+        "kadapa" to Pair(14.4673, 78.8242),
+        "rajahmundry" to Pair(17.0005, 81.8040),
+        "kakinada" to Pair(16.9891, 82.2475),
+        "eluru" to Pair(16.7107, 81.0952)
+    )
+
+    fun resolveCityCoordinates(cityStr: String?): Pair<Double, Double>? {
+        if (cityStr.isNullOrBlank()) return null
+        val clean = cityStr.trim().lowercase()
+        if (cityCoordinates.containsKey(clean)) return cityCoordinates[clean]
+
+        for ((key, coords) in cityCoordinates) {
+            if (clean.contains(key) || key.contains(clean)) return coords
+        }
+        return null
+    }
+
+    fun calculateDistanceKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val r = 6371.0
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2)
+        val c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+        return r * c
+    }
 }

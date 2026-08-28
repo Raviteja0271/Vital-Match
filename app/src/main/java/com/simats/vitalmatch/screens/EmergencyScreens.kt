@@ -62,6 +62,7 @@ fun PostEmergencyScreen(navController: NavController) {
     var state by remember { mutableStateOf("") }
     var district by remember { mutableStateOf("") }
     var city by remember { mutableStateOf("") }
+    var radiusKm by remember { mutableStateOf("5 km") }
     
     val countries = com.simats.vitalmatch.data.LocationData.countries
     val statesMap = com.simats.vitalmatch.data.LocationData.statesMap
@@ -195,6 +196,15 @@ fun PostEmergencyScreen(navController: NavController) {
             options = citiesMap[district] ?: emptyList(),
             onOptionSelected = { city = it }
         )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        SearchDropdownField(
+            label = "Notification Radius", 
+            value = radiusKm, 
+            placeholder = "Select notification radius",
+            options = listOf("5 km", "10 km", "15 km", "25 km", "50 km"),
+            onOptionSelected = { radiusKm = it }
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
         Text(com.simats.vitalmatch.ui.theme.AppStrings.get("additional_notes"), fontWeight = FontWeight.Bold, fontSize = 14.sp, color = MaterialTheme.colorScheme.onSurface)
@@ -244,30 +254,46 @@ fun PostEmergencyScreen(navController: NavController) {
                         )
                         SupabaseClient.client.postgrest["emergency_requests"].insert(emergency)
 
-                        // Geo-Based Notification System: Dispatch notifications to all users in the same district
-                        if (district.isNotBlank()) {
-                            try {
-                                val targetDistrict = district
-                                val districtDonors = SupabaseClient.client.postgrest["profiles"]
-                                    .select {
-                                        filter {
-                                            eq("district", targetDistrict)
-                                        }
-                                    }.decodeList<Donor>()
+                        // Geo-Based Notification System: Strict distance filtering (Haversine formula)
+                        val radiusVal = radiusKm.replace("km", "").trim().toDoubleOrNull() ?: 5.0
+                        val emCityName = city.ifBlank { district.ifBlank { "Chirala" } }
+                        val emCoords = com.simats.vitalmatch.data.LocationData.resolveCityCoordinates(emCityName)
 
-                                for (d in districtDonors) {
-                                    val dId = d.id
-                                    if (!dId.isNullOrBlank() && dId != currentUser?.id) {
-                                        val newNotif = NotificationModel(
+                        val allDonors = SupabaseClient.client.postgrest["profiles"]
+                            .select {
+                                filter {
+                                    eq("is_donor", true)
+                                    eq("blood_group", bloodType)
+                                    eq("is_available", true)
+                                }
+                            }.decodeList<Donor>()
+
+                        for (d in allDonors) {
+                            val dId = d.id
+                            val daysSince = calculateDaysSince(d.last_donation_date ?: "")
+                            val isNotHospitalized = d.hospitalization_status != "Yes"
+                            if (!dId.isNullOrBlank() && dId != currentUser?.id && daysSince >= 90 && isNotHospitalized) {
+                                val donorCityName = d.city ?: d.district ?: ""
+                                val donorCoords = com.simats.vitalmatch.data.LocationData.resolveCityCoordinates(donorCityName)
+
+                                if (emCoords != null && donorCoords != null) {
+                                    val dist = com.simats.vitalmatch.data.LocationData.calculateDistanceKm(
+                                        emCoords.first, emCoords.second,
+                                        donorCoords.first, donorCoords.second
+                                    )
+                                    // STRICT RADIUS CHECK: Only send notification if distance <= selected radius!
+                                    if (dist <= radiusVal) {
+                                        val distFormatted = String.format(java.util.Locale.US, "%.1f", dist)
+                                        val notif = NotificationModel(
                                             user_id = dId,
-                                            title = "EMERGENCY: $bloodType Needed in $targetDistrict",
-                                            message = "Urgent $bloodType blood request at $hospital ($city, $targetDistrict). Contact: $contact",
+                                            title = "URGENT: $bloodType Blood Needed (${distFormatted}km away)",
+                                            message = "Emergency blood request at $hospital ($loc), ${distFormatted}km from your location. Contact: $contact",
                                             type = "URGENT"
                                         )
-                                        SupabaseClient.client.postgrest["notifications"].insert(newNotif)
+                                        SupabaseClient.client.postgrest["notifications"].insert(notif)
                                     }
                                 }
-                            } catch (e: Exception) { }
+                            }
                         }
 
                         Toast.makeText(context, "POST EMERGENCY SUCCESSFULLY", Toast.LENGTH_LONG).show()
@@ -391,7 +417,7 @@ fun EmergencyFeedScreen(navController: NavController) {
             emergenciesList = if (currentUserDistrict.isNotBlank()) {
                 allEmergencies.filter { e ->
                     (e.district != null && e.district.equals(currentUserDistrict, ignoreCase = true)) ||
-                    e.location.contains(currentUserDistrict, ignoreCase = true) ||
+                    (e.location?.contains(currentUserDistrict, ignoreCase = true) == true) ||
                     (e.user_id != null && e.user_id == currentUser?.id)
                 }
             } else {
@@ -502,7 +528,7 @@ fun EmergencyFeedScreen(navController: NavController) {
                         posterName = item.patient_name.ifEmpty { "Patient" },
                         hospital = item.hospital_name,
                         contactNumber = item.contact_number,
-                        location = item.location,
+                        location = item.location ?: "",
                         notes = item.notes ?: "",
                         time = item.created_at?.take(10) ?: "Just now",
                         urgencyTag = if (item.notes?.contains("urgent", ignoreCase = true) == true) "URGENT" else null,
@@ -698,7 +724,7 @@ fun EmergencyDetailScreen(
                     bloodGroup = item.blood_group
                     contactNumber = item.contact_number
                     hospitalName = item.hospital_name
-                    locationStr = item.location
+                    locationStr = item.location ?: ""
                     notesStr = item.notes ?: ""
                     status = item.status
                 }
@@ -842,7 +868,7 @@ fun EmergencyDetailScreen(
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color.White, modifier = Modifier.size(20.dp))
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Blood Received & Completed", fontSize = 16.sp, fontWeight = FontWeight.Bold)
+                    Text("Mark Blood Received & Completed", fontSize = 16.sp, fontWeight = FontWeight.Bold)
                 }
             }
 

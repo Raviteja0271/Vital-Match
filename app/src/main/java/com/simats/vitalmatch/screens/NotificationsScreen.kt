@@ -28,6 +28,8 @@ import com.simats.vitalmatch.data.models.NotificationModel
 import com.simats.vitalmatch.data.models.Emergency
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import androidx.compose.runtime.*
 import kotlinx.coroutines.launch
 
@@ -47,6 +49,7 @@ fun NotificationsScreen(navController: NavController) {
                 .select {
                     filter {
                         if (currentUserId.isNotEmpty()) eq("user_id", currentUserId)
+                        eq("is_read", false)
                     }
                 }.decodeList<NotificationModel>().map {
                     NotificationData(
@@ -54,22 +57,11 @@ fun NotificationsScreen(navController: NavController) {
                         title = it.title,
                         message = it.message,
                         time = it.created_at?.take(10) ?: "Just now",
-                        type = if (it.type == "URGENT") "URGENT" else "NORMAL",
+                        type = if (it.type == "URGENT" || it.type == "emergency") "URGENT" else "NORMAL",
                         location = null
                     )
                 }
-            val activeEmergencies = SupabaseClient.client.postgrest["emergency_requests"]
-                .select().decodeList<Emergency>().filter { it.status == "Active" }.map {
-                    NotificationData(
-                        id = it.id ?: "",
-                        title = "Emergency: ${it.blood_group} Blood Needed",
-                        message = it.notes ?: "Emergency blood request at ${it.hospital_name}",
-                        time = it.created_at?.take(10) ?: "Recently",
-                        type = if (it.notes?.contains("urgent", ignoreCase = true) == true) "URGENT" else "NORMAL",
-                        location = it.hospital_name
-                    )
-                }
-            notificationsList = fetchedNotifications + activeEmergencies
+            notificationsList = fetchedNotifications
         } catch (e: Exception) {
             Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
         } finally {
@@ -123,7 +115,7 @@ fun NotificationsScreen(navController: NavController) {
             }
         } else if (notificationsList.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("No notifications", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("No active notifications", color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         } else {
             LazyColumn(
@@ -133,8 +125,13 @@ fun NotificationsScreen(navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(12.dp),
                 contentPadding = PaddingValues(vertical = 16.dp)
             ) {
-                items(notificationsList) { notification ->
-                    NotificationCard(notification)
+                items(notificationsList, key = { it.id }) { notification ->
+                    NotificationCard(
+                        notification = notification,
+                        onActionDone = {
+                            notificationsList = notificationsList.filter { item -> item.id != notification.id }
+                        }
+                    )
                 }
             }
         }
@@ -142,11 +139,10 @@ fun NotificationsScreen(navController: NavController) {
 }
 
 @Composable
-fun NotificationCard(notification: NotificationData) {
+fun NotificationCard(notification: NotificationData, onActionDone: () -> Unit = {}) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var isAccepted by remember { mutableStateOf(false) }
-    var isDeclined by remember { mutableStateOf(false) }
+    var isProcessing by remember { mutableStateOf(false) }
 
     val isRequestNotif = notification.type == "URGENT" || 
                          notification.title.contains("Request", ignoreCase = true) || 
@@ -174,16 +170,13 @@ fun NotificationCard(notification: NotificationData) {
             Box(
                 modifier = Modifier
                     .size(48.dp)
-                    .background(
-                        if (isAccepted || notification.type == "CONNECTED") Color(0xFFE8F5E9) else Color(0xFFFFEBEE), 
-                        RoundedCornerShape(12.dp)
-                    ),
+                    .background(Color(0xFFFFEBEE), RoundedCornerShape(12.dp)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    imageVector = if (isAccepted || notification.type == "CONNECTED") Icons.Default.CheckCircle else Icons.Default.WaterDrop,
+                    imageVector = Icons.Default.WaterDrop,
                     contentDescription = null,
-                    tint = if (isAccepted || notification.type == "CONNECTED") Color(0xFF2ECC71) else RedPrimary,
+                    tint = RedPrimary,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -204,15 +197,7 @@ fun NotificationCard(notification: NotificationData) {
                         modifier = Modifier.weight(1f)
                     )
                     
-                    if (isAccepted) {
-                        Surface(color = Color(0xFFE8F5E9), shape = RoundedCornerShape(6.dp)) {
-                            Text("Accepted", color = Color(0xFF2E7D32), fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
-                        }
-                    } else if (isDeclined) {
-                        Surface(color = Color(0xFFFFEBEE), shape = RoundedCornerShape(6.dp)) {
-                            Text("Declined", color = RedPrimary, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp))
-                        }
-                    } else if (notification.type == "URGENT") {
+                    if (notification.type == "URGENT") {
                         Surface(color = RedPrimary, shape = RoundedCornerShape(4.dp)) {
                             Text("URGENT", color = Color.White, fontSize = 10.sp, fontWeight = FontWeight.Bold, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp))
                         }
@@ -242,7 +227,7 @@ fun NotificationCard(notification: NotificationData) {
                     }
                 }
 
-                if (isRequestNotif && !isAccepted && !isDeclined) {
+                if (isRequestNotif && !isProcessing) {
                     Spacer(modifier = Modifier.height(12.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -250,17 +235,32 @@ fun NotificationCard(notification: NotificationData) {
                     ) {
                         OutlinedButton(
                             onClick = {
-                                isDeclined = true
+                                isProcessing = true
                                 scope.launch {
                                     try {
                                         val currentUser = SupabaseClient.client.auth.currentUserOrNull()
                                         if (currentUser != null) {
-                                            SupabaseClient.client.postgrest["blood_requests"]
-                                                .update({ set("status", "Declined") }) {
-                                                    filter { eq("donor_user_id", currentUser.id) }
-                                                }
+                                            val phoneRegex = Regex("\\b\\d{10}\\b")
+                                            val phoneMatch = phoneRegex.find(notification.message) ?: phoneRegex.find(notification.title)
+                                            val phoneStr = phoneMatch?.value ?: "8885008245"
+                                            val requesterNameStr = notification.title.replace("EMERGENCY: ", "").replace(" Blood Required", "").ifBlank { "Emergency Requester" }
+
+                                            val req = buildJsonObject {
+                                                put("donor_user_id", currentUser.id)
+                                                put("requester_name", requesterNameStr)
+                                                put("requester_phone", phoneStr)
+                                                put("status", "Declined")
+                                            }
+                                            SupabaseClient.client.postgrest["blood_requests"].insert(req)
+                                            
+                                            SupabaseClient.client.postgrest["notifications"].delete {
+                                                filter { eq("id", notification.id) }
+                                            }
                                         }
-                                    } catch (e: Exception) { }
+                                        onActionDone()
+                                    } catch (e: Exception) {
+                                        onActionDone()
+                                    }
                                 }
                             },
                             modifier = Modifier.weight(1f).height(38.dp),
@@ -273,19 +273,47 @@ fun NotificationCard(notification: NotificationData) {
 
                         Button(
                             onClick = {
-                                isAccepted = true
+                                isProcessing = true
                                 scope.launch {
                                     try {
                                         val currentUser = SupabaseClient.client.auth.currentUserOrNull()
                                         if (currentUser != null) {
-                                            SupabaseClient.client.postgrest["blood_requests"]
-                                                .update({ set("status", "Accepted") }) {
-                                                    filter { eq("donor_user_id", currentUser.id) }
-                                                }
+                                            val existingActive = SupabaseClient.client.postgrest["blood_requests"]
+                                                .select {
+                                                    filter {
+                                                        eq("donor_user_id", currentUser.id)
+                                                        eq("status", "Accepted")
+                                                    }
+                                                }.decodeList<com.simats.vitalmatch.data.models.BloodRequest>()
+
+                                            if (existingActive.isNotEmpty()) {
+                                                Toast.makeText(context, "You already have an active accepted request! You can only accept one request at a time until donation is completed or cancelled.", Toast.LENGTH_LONG).show()
+                                                isProcessing = false
+                                                return@launch
+                                            }
+
+                                            val phoneRegex = Regex("\\b\\d{10}\\b")
+                                            val phoneMatch = phoneRegex.find(notification.message) ?: phoneRegex.find(notification.title)
+                                            val phoneStr = phoneMatch?.value ?: "8885008245"
+                                            val requesterNameStr = notification.title.replace("EMERGENCY: ", "").replace(" Blood Required", "").ifBlank { "Emergency Requester" }
+
+                                            val req = buildJsonObject {
+                                                put("donor_user_id", currentUser.id)
+                                                put("requester_name", requesterNameStr)
+                                                put("requester_phone", phoneStr)
+                                                put("status", "Accepted")
+                                            }
+                                            SupabaseClient.client.postgrest["blood_requests"].insert(req)
+
+                                            SupabaseClient.client.postgrest["notifications"].delete {
+                                                filter { eq("id", notification.id) }
+                                            }
                                         }
-                                        Toast.makeText(context, "Request Accepted! Requester notified.", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Request Accepted! Moved to Accepted Requests in My Requests.", Toast.LENGTH_LONG).show()
+                                        onActionDone()
                                     } catch (e: Exception) {
-                                        Toast.makeText(context, "Request Accepted!", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Error accepting request: ${e.message}", Toast.LENGTH_SHORT).show()
+                                        onActionDone()
                                     }
                                 }
                             },
