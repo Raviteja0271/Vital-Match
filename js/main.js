@@ -57,28 +57,12 @@ async function initApp() {
         currentProfile = await DB.getProfile(session.user.id);
 
         if (!currentProfile) {
-            const metaName = (session.user.user_metadata && (session.user.user_metadata.full_name || session.user.user_metadata.name)) ? 
-                (session.user.user_metadata.full_name || session.user.user_metadata.name) : null;
-            const userEmail = session.user.email || '';
-            const defaultName = metaName || (userEmail ? userEmail.split('@')[0] : 'User Profile');
-
-            const newProfilePayload = {
-                id: session.user.id,
-                email: userEmail,
-                full_name: defaultName,
-                mobile: session.user.phone || '8885008245',
-                blood_group: 'O+',
-                is_donor: true,
-                is_available: true,
-                hospitalization_status: 'No',
-                last_donation_date: null,
-                state: 'Andhra Pradesh',
-                district: 'Prakasam',
-                city: 'Ongole'
-            };
-
-            const upsertRes = await DB.updateProfile(session.user.id, newProfilePayload);
-            currentProfile = upsertRes || newProfilePayload;
+            console.warn('Profile deleted from database. Terminating session...');
+            await supabaseSignOut();
+            localStorage.clear();
+            alert('Your account data was cleared from the database. Please register a new account.');
+            window.location.href = 'index.html';
+            return false;
         }
     }
 
